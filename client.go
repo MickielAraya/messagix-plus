@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"sync"
+	"time"
 
 	"net/http"
 
@@ -55,10 +56,19 @@ type Client struct {
 
 // pass an empty zerolog.Logger{} for no logging
 func NewClient(platform types.Platform, cookies cookies.Cookies, logger zerolog.Logger, proxy string) (*Client, error) {
-	cli := &Client{
-		http: &fhttp.Client{
-			Transport: &fhttp.Transport{},
+	httpClient := &fhttp.Client{
+		Transport: &fhttp.Transport{
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 10,
+			IdleConnTimeout:     90 * time.Second,
+			TLSHandshakeTimeout: 10 * time.Second,
+			DisableKeepAlives:   false,
 		},
+		Timeout: 30 * time.Second,
+	}
+
+	cli := &Client{
+		http:            httpClient,
 		cookies:         cookies,
 		Logger:          logger,
 		lsRequests:      0,
