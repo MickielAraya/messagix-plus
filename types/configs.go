@@ -2,10 +2,12 @@ package types
 
 import (
 	"encoding/json"
-	"github.com/MickielAraya/messagix-plus/table"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/MickielAraya/messagix-plus/table"
 )
 
 type MqttWebDeviceID struct {
@@ -165,6 +167,7 @@ type XIGSharedData struct {
 }
 
 func (xig *XIGSharedData) ParseRaw() error {
+	fmt.Println("xig.Raw", xig.Raw)
 	return json.Unmarshal([]byte(xig.Raw), &xig.ConfigData)
 }
 
