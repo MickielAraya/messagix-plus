@@ -27,4 +27,3 @@ var InstagramEndpoints = map[string]string{
 	"reels_media":      instaApiV1Url + "/feed/reels_media/?",
 	"media_info":       instaApiV1Url + "/media/%s/info/",
 }
-,
