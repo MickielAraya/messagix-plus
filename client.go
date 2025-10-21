@@ -119,7 +119,6 @@ func (c *Client) configureAfterLogin() error {
 	moduleLoader := &ModuleParser{client: c}
 	err := moduleLoader.Load(c.getEndpoint("messages"))
 	if err != nil {
-		fmt.Println(c, c.getEndpoint("messages"))
 		return err
 	}
 

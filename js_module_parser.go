@@ -165,15 +165,9 @@ func (m *ModuleParser) Load(page string) error {
 
 	if m.client.platform == types.Instagram {
 		sharedData := m.client.configs.browserConfigTable.XIGSharedData
-
-		// Check if Raw field is empty before parsing
-		if sharedData.Raw == "" {
-			m.client.Logger.Warn().Msg("XIGSharedData.Raw field is empty, skipping ParseRaw()")
-		} else {
-			err = sharedData.ParseRaw()
-			if err != nil {
-				return fmt.Errorf("messagix-moduleparser: failed to parse XIGSharedData raw string into *types.XIGConfigData (%e)", err)
-			}
+		err = sharedData.ParseRaw()
+		if err != nil {
+			return fmt.Errorf("messagix-moduleparser: failed to parse XIGSharedData raw string into *types.XIGConfigData (%e)", err)
 		}
 		m.client.Logger.Info().Any("authenticated", authenticated).Msg("Instagram Authentication Status")
 		if !authenticated {
