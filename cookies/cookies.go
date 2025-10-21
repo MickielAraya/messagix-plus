@@ -3,13 +3,15 @@ package cookies
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/textproto"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	fhttp "github.com/bogdanfinn/fhttp"
+
 	"github.com/0xzer/messagix/types"
 	"golang.org/x/net/http/httpguts"
 )
@@ -23,24 +25,24 @@ type Cookies interface {
 
 func UpdateValue(cookieStruct Cookies, name, val string) {
 	//val = strings.Replace(val, "\\", "\\/", -1)
-    v := reflect.ValueOf(cookieStruct).Elem()
-    t := v.Type()
-    for i := 0; i < v.NumField(); i++ {
-        field := v.Field(i)
-        tagVal, ok := t.Field(i).Tag.Lookup("cookie")
-        if !ok {
-            continue
-        }
+	v := reflect.ValueOf(cookieStruct).Elem()
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		tagVal, ok := t.Field(i).Tag.Lookup("cookie")
+		if !ok {
+			continue
+		}
 
-        tagMainVal := strings.Split(tagVal, ",")[0]
-        if tagMainVal == name && field.CanSet() {
-            field.SetString(val)
-        }
-    }
+		tagMainVal := strings.Split(tagVal, ",")[0]
+		if tagMainVal == name && field.CanSet() {
+			field.SetString(val)
+		}
+	}
 }
 
 /*
-	Make sure the indexes for the names correspond with the correct value they should be set to
+Make sure the indexes for the names correspond with the correct value they should be set to
 */
 func UpdateMultipleValues(cookieStruct Cookies, names []string, values []string) error {
 	if len(names) != len(values) {
@@ -53,7 +55,7 @@ func UpdateMultipleValues(cookieStruct Cookies, names []string, values []string)
 	return nil
 }
 
-func UpdateFromResponse(cookieStruct Cookies, h http.Header) {
+func UpdateFromResponse(cookieStruct Cookies, h fhttp.Header) {
 	cookies := ReadSetCookiesCustom(h)
 	for _, c := range cookies {
 		UpdateValue(cookieStruct, c.Name, c.Value)
@@ -80,11 +82,11 @@ func CookiesToString(c Cookies) string {
 		tagName := strings.Split(tagValue, ",")[0]
 		s += fmt.Sprintf("%s=%v; ", tagName, value)
 	}
-	
+
 	return s
 }
 
-func NewCookiesFromResponse(cookies []*http.Cookie) Cookies {
+func NewCookiesFromResponse(cookies []*fhttp.Cookie) Cookies {
 	return nil
 }
 
@@ -112,9 +114,10 @@ func NewCookiesFromFile(path string, platform types.Platform) (Cookies, error) {
 }
 
 /*
-	Example:
-		var cookies types.FacebookCookies
-		err := types.NewCookiesFromString("...", &cookies)
+Example:
+
+	var cookies types.FacebookCookies
+	err := types.NewCookiesFromString("...", &cookies)
 */
 func NewCookiesFromString(cookieStr string, cookieStruct Cookies) error {
 	val := reflect.ValueOf(cookieStruct)
@@ -123,7 +126,7 @@ func NewCookiesFromString(cookieStr string, cookieStruct Cookies) error {
 	} else {
 		return fmt.Errorf("expected a pointer to a struct")
 	}
-	
+
 	typ := val.Type()
 	for i := 0; i < val.NumField(); i++ {
 		fieldVal := val.Field(i)
@@ -174,7 +177,6 @@ func getCookieValue(name string, cookieStruct Cookies) string {
 	return ""
 }
 
-//
 // Custom implementation of std http lib implementation of parsing the Set-Cookie in response headers
 //
 // Because their implementation can apparently says cookie values that start with " or contain \ are invalid (https://github.com/golang/go/blob/master/src/net/http/cookie.go#L415)
@@ -182,12 +184,12 @@ func getCookieValue(name string, cookieStruct Cookies) string {
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go#L60
 // readSetCookies parses all "Set-Cookie" values from
 // the header h and returns the successfully parsed Cookies.
-func ReadSetCookiesCustom(h http.Header) []*http.Cookie {
+func ReadSetCookiesCustom(h fhttp.Header) []*fhttp.Cookie {
 	cookieCount := len(h["Set-Cookie"])
 	if cookieCount == 0 {
-		return []*http.Cookie{}
+		return []*fhttp.Cookie{}
 	}
-	cookies := make([]*http.Cookie, 0, cookieCount)
+	cookies := make([]*fhttp.Cookie, 0, cookieCount)
 	for _, line := range h["Set-Cookie"] {
 		parts := strings.Split(textproto.TrimString(line), ";")
 		if len(parts) == 1 && parts[0] == "" {
@@ -206,7 +208,7 @@ func ReadSetCookiesCustom(h http.Header) []*http.Cookie {
 		if !ok {
 			continue
 		}
-		c := &http.Cookie{
+		c := &fhttp.Cookie{
 			Name:  name,
 			Value: value,
 			Raw:   line,
@@ -231,18 +233,18 @@ func ReadSetCookiesCustom(h http.Header) []*http.Cookie {
 			case "samesite":
 				lowerVal, ascii := ToLower(val)
 				if !ascii {
-					c.SameSite = http.SameSiteDefaultMode
+					c.SameSite = fhttp.SameSiteDefaultMode
 					continue
 				}
 				switch lowerVal {
 				case "lax":
-					c.SameSite = http.SameSiteLaxMode
+					c.SameSite = fhttp.SameSiteLaxMode
 				case "strict":
-					c.SameSite = http.SameSiteStrictMode
+					c.SameSite = fhttp.SameSiteStrictMode
 				case "none":
-					c.SameSite = http.SameSiteNoneMode
+					c.SameSite = fhttp.SameSiteNoneMode
 				default:
-					c.SameSite = http.SameSiteDefaultMode
+					c.SameSite = fhttp.SameSiteDefaultMode
 				}
 				continue
 			case "secure":

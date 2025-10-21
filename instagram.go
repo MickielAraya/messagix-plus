@@ -10,6 +10,8 @@ import (
 	"github.com/0xzer/messagix/crypto"
 	"github.com/0xzer/messagix/data/responses"
 	"github.com/0xzer/messagix/types"
+	"github.com/0xzer/messagix/utils"
+	fhttp "github.com/bogdanfinn/fhttp"
 	"github.com/google/go-querystring/query"
 )
 
@@ -21,8 +23,8 @@ type InstagramMethods struct {
 func (ig *InstagramMethods) Login(identifier, password string) (cookies.Cookies, error) {
 	ig.client.loadLoginPage()
 	if err := ig.client.configs.SetupConfigs(); err != nil {
-        return nil, err
-    }
+		return nil, err
+	}
 	h := ig.client.buildHeaders(false)
 	h.Add("x-web-device-id", ig.client.cookies.GetValue("ig_did"))
 	h.Add("sec-fetch-dest", "empty")
@@ -67,11 +69,11 @@ func (ig *InstagramMethods) Login(identifier, password string) (cookies.Cookies,
 	}
 
 	loginForm := &types.InstagramLoginPayload{
-		Password: encryptedPw,
-		OptIntoOneTap: false,
-		QueryParams: "{}",
+		Password:             encryptedPw,
+		OptIntoOneTap:        false,
+		QueryParams:          "{}",
 		TrustedDeviceRecords: "{}",
-		Username: identifier,
+		Username:             identifier,
 	}
 
 	form, err := query.Values(&loginForm)
@@ -81,7 +83,7 @@ func (ig *InstagramMethods) Login(identifier, password string) (cookies.Cookies,
 		return nil, err
 	}
 
-	loginResult := ig.client.Account.processLogin(loginResp, loginBody)
+	loginResult := ig.client.Account.processLogin(ig, loginResp, loginBody)
 	if loginResult != nil {
 		return nil, loginResult
 	}
@@ -89,17 +91,110 @@ func (ig *InstagramMethods) Login(identifier, password string) (cookies.Cookies,
 	return ig.client.cookies, nil
 }
 
+func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret string) error {
+	if identifier == "" || totpSecret == "" {
+		return fmt.Errorf("missing identifier, or TOTP secret for Instagram two-factor login")
+	}
+
+	csrfToken := ig.client.cookies.GetValue("csrftoken")
+	appID := ig.client.configs.browserConfigTable.CurrentUserInitialData.AppID
+	igWWWClaim := "0"
+	if instaCookies, ok := ig.client.cookies.(*cookies.InstagramCookies); ok && instaCookies.IgWWWClaim != "" {
+		igWWWClaim = instaCookies.IgWWWClaim
+	}
+
+	totpCode, err := utils.GenerateTotpCode(totpSecret)
+	if err != nil {
+		return fmt.Errorf("failed to generate TOTP code: %w", err)
+	}
+
+	formBody := ""
+	formOrder := []struct {
+		k, v string
+	}{
+		{"identifier", identifier},
+		{"isPrivacyPortalReq", "false"},
+		{"queryParams", `{"next":"/"}`},
+		{"trust_signal", "true"},
+		{"username", username},
+		{"verification_method", "3"},
+		{"verificationCode", totpCode},
+		{"jazoest", ig.client.configs.Jazoest},
+	}
+
+	for i, kv := range formOrder {
+		if i > 0 {
+			formBody += "&"
+		}
+		formBody += url.QueryEscape(kv.k) + "=" + url.QueryEscape(kv.v)
+	}
+
+	h := fhttp.Header{}
+
+	h.Set("Host", "www.instagram.com")
+	h.Set("Cookie", cookies.CookiesToString(ig.client.cookies))
+	h.Set("x-csrftoken", csrfToken)
+	h.Set("accept-language", "en-US,en;q=0.6")
+	h.Set("referer", "https://www.instagram.com/accounts/login/two_factor?next=%2F")
+	h.Set("sec-ch-ua-platform-version", `"10.0.0"`)
+	h.Set("sec-fetch-mode", "cors")
+	h.Set("priority", "u=1, i")
+	h.Set("sec-ch-ua-model", `""`)
+	h.Set("sec-ch-ua-mobile", "?0")
+	h.Set("x-ig-app-id", appID)
+	h.Set("x-requested-with", "XMLHttpRequest")
+	h.Set("accept", "*/*")
+	h.Set("x-asbd-id", "359341")
+	h.Set("x-ig-www-claim", igWWWClaim)
+	h.Set("origin", "https://www.instagram.com")
+	h.Set("sec-ch-ua-platform", `"Windows"`)
+	h.Set("x-web-session-id", ig.client.configs.WebSessionId)
+	h.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
+	h.Set("sec-gpc", "1")
+	h.Set("sec-fetch-site", "same-origin")
+	h.Set("sec-fetch-dest", "empty")
+	h.Set("sec-ch-ua-full-version-list", `"Brave";v="141.0.0.0", "Not?A_Brand";v="8.0.0.0", "Chromium";v="141.0.0.0"`)
+	h.Set("sec-ch-ua", `"Brave";v="141", "Not?A_Brand";v="8", "Chromium";v="141"`)
+	h.Set("x-instagram-ajax", "1028361656")
+
+	apiURL := "https://www.instagram.com/api/v1/web/accounts/login/ajax/two_factor/"
+	resp, respBody, err := ig.client.MakeRequest(apiURL, "POST", h, []byte(formBody), types.FORM)
+
+	if err != nil {
+		return fmt.Errorf("instagram 2FA request failed: %w", err)
+	}
+
+	cookies.UpdateFromResponse(ig.client.cookies, resp.Header)
+
+	var loginResp types.InstagramLoginResponse
+	if err := json.Unmarshal(respBody, &loginResp); err != nil {
+		return fmt.Errorf("failed to decode instagram 2fa login JSON: %w", err)
+	}
+
+	if loginResp.Status == "fail" {
+		if loginResp.Message != "" {
+			return fmt.Errorf("2FA failed: %s", loginResp.Message)
+		}
+		return fmt.Errorf("2FA login failed, generic failure")
+	}
+	if !loginResp.Authenticated {
+		return fmt.Errorf("2FA login failed: not authenticated")
+	}
+
+	return nil
+}
+
 func (ig *InstagramMethods) FetchProfile(username string) (*responses.ProfileInfoResponse, error) {
 	h := ig.client.buildHeaders(true)
 	h.Add("x-requested-with", "XMLHttpRequest")
-	h.Add("referer", ig.client.getEndpoint("base_url") +  username + "/")
+	h.Add("referer", ig.client.getEndpoint("base_url")+username+"/")
 	reqUrl := ig.client.getEndpoint("web_profile_info") + "username=" + username
 
 	resp, respBody, err := ig.client.MakeRequest(reqUrl, "GET", h, nil, types.NONE)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch the profile by username @%s: %e", username, err)
 	}
-	
+
 	cookies.UpdateFromResponse(ig.client.cookies, resp.Header)
 
 	var profileInfo *responses.ProfileInfoResponse
@@ -121,7 +216,7 @@ func (ig *InstagramMethods) FetchMedia(mediaId string) (*responses.FetchMediaRes
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch the media by id %s: %e", mediaId, err)
 	}
-	
+
 	cookies.UpdateFromResponse(ig.client.cookies, resp.Header)
 
 	var mediaInfo *responses.FetchMediaResponse
@@ -147,7 +242,7 @@ func (ig *InstagramMethods) FetchReel(reelIds []string) (*responses.ReelInfoResp
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch reels by ids %v: %e", reelIds, err)
 	}
-	
+
 	cookies.UpdateFromResponse(ig.client.cookies, resp.Header)
 
 	var reelInfo *responses.ReelInfoResponse

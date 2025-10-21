@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 	"github.com/0xzer/messagix/cookies"
 	"github.com/0xzer/messagix/methods"
 	"github.com/0xzer/messagix/types"
+	fhttp "github.com/bogdanfinn/fhttp"
 	"golang.org/x/net/html"
 )
 
@@ -49,11 +49,11 @@ type InputTag struct {
 }
 
 type ModuleParser struct {
-	client *Client
-	testData []byte
-	FormTags []FormTag
+	client      *Client
+	testData    []byte
+	FormTags    []FormTag
 	LoginInputs []InputTag
-	JSDatr string
+	JSDatr      string
 }
 
 func (m *ModuleParser) SetClientInstance(cli *Client) {
@@ -129,7 +129,7 @@ func (m *ModuleParser) Load(page string) error {
 			}
 
 			req := data.Require
-		    for _, mod := range req {
+			for _, mod := range req {
 				err = m.handleModule(mod)
 				if err != nil {
 					return err
@@ -141,7 +141,7 @@ func (m *ModuleParser) Load(page string) error {
 	authenticated := m.client.IsAuthenticated()
 	// on certain occasions, the server does not return the lightspeed data or version
 	// when this is the case, the server "preloads" the js files in the link tags, so we need to loop through them until we can find the "LSVersion" module and extract the exported version string
-	if m.client.configs.VersionId == 0  && authenticated {
+	if m.client.configs.VersionId == 0 && authenticated {
 		m.client.configs.needSync = true
 		m.client.Logger.Info().Msg("Setting configs.needSync to true")
 		var doneCrawling bool
@@ -200,7 +200,7 @@ type BigPipe struct {
 func (m *ModuleParser) requireLazyModule(data string) error {
 	moduleSplit := strings.Split(data[12:], "],")
 	var moduleNames []string
-	err := json.Unmarshal([]byte(moduleSplit[0] + "]"), &moduleNames)
+	err := json.Unmarshal([]byte(moduleSplit[0]+"]"), &moduleNames)
 	if err != nil {
 		return fmt.Errorf("messagix-moduleparser: failed to get module names from requireLazy module (%e)", err)
 	}
@@ -276,7 +276,7 @@ func (m *ModuleParser) requireLazyModule(data string) error {
 }
 
 func (m *ModuleParser) crawlJavascriptFile(href string) (bool, error) {
-	_, jsContent, err := m.client.MakeRequest(href, "GET", http.Header{}, nil, types.NONE)
+	_, jsContent, err := m.client.MakeRequest(href, "GET", fhttp.Header{}, nil, types.NONE)
 	if err != nil {
 		return false, err
 	}
@@ -284,7 +284,7 @@ func (m *ModuleParser) crawlJavascriptFile(href string) (bool, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	versionMatches := versionPattern.FindStringSubmatch(string(jsContent))
 	if len(versionMatches) > 0 {
 		versionInt, err := strconv.ParseInt(versionMatches[1], 10, 64)
@@ -301,36 +301,36 @@ func (m *ModuleParser) handleModule(data []interface{}) error {
 	modName := data[0].(string)
 	modData := data[3].([]interface{})
 	switch modName {
-		case "ScheduledServerJS", "ScheduledServerJSWithCSS":
-			method := data[1].(string)
-			for _, d := range modData {
-				switch method {
-				case "handle":
-					err := m.SSJSHandle(d)
-					if err != nil {
-						return fmt.Errorf("messagix-moduleparser: failed to handle scheduledserverjs module (%e)", err)
-					}
+	case "ScheduledServerJS", "ScheduledServerJSWithCSS":
+		method := data[1].(string)
+		for _, d := range modData {
+			switch method {
+			case "handle":
+				err := m.SSJSHandle(d)
+				if err != nil {
+					return fmt.Errorf("messagix-moduleparser: failed to handle scheduledserverjs module (%e)", err)
 				}
 			}
-		case "Bootloader":
-			method := data[1].(string)
-			for _, d := range modData {
-				switch method {
-					case "handlePayload":
-						err := m.Bootloader_HandlePayload(d, &m.client.configs.browserConfigTable.BootloaderConfig)
-						if err != nil {
-							return fmt.Errorf("messagix-moduleparser: failed to handle Bootloader_handlePayload call (%e)", err)
-						}
-						//debug.Debug().Any("csrBitmap", modules.CsrBitmap).Msg("handlePayload")
-				}
-			}
-		/*
-		add later if needed for the gkx data
-		case "HasteSupportData":
-			log.Println("got haste support data!")
-			m.client.Logger.Debug().Any("data", modData).Msg("Got haste support data")
-			os.Exit(1)
 		}
+	case "Bootloader":
+		method := data[1].(string)
+		for _, d := range modData {
+			switch method {
+			case "handlePayload":
+				err := m.Bootloader_HandlePayload(d, &m.client.configs.browserConfigTable.BootloaderConfig)
+				if err != nil {
+					return fmt.Errorf("messagix-moduleparser: failed to handle Bootloader_handlePayload call (%e)", err)
+				}
+				//debug.Debug().Any("csrBitmap", modules.CsrBitmap).Msg("handlePayload")
+			}
+		}
+		/*
+			add later if needed for the gkx data
+			case "HasteSupportData":
+				log.Println("got haste support data!")
+				m.client.Logger.Debug().Any("data", modData).Msg("Got haste support data")
+				os.Exit(1)
+			}
 		*/
 	}
 	return nil

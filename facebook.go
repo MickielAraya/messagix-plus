@@ -40,7 +40,7 @@ func (fb *FacebookMethods) Login(identifier, password string) (cookies.Cookies, 
 
 	testDataSimulator := crypto.NewABTestData()
 	data := testDataSimulator.GenerateAbTestData([]string{identifier, password})
-	
+
 	encryptedPW, err := crypto.EncryptPassword(int(types.Facebook), crypto.FacebookPubKeyId, crypto.FacebookPubKey, password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encrypt password for facebook: %e", err)
@@ -64,7 +64,7 @@ func (fb *FacebookMethods) Login(identifier, password string) (cookies.Cookies, 
 		return nil, err
 	}
 
-	loginResult := fb.client.Account.processLogin(loginResp, loginBody)
+	loginResult := fb.client.Account.processLogin(nil, loginResp, loginBody)
 	if loginResult != nil {
 		return nil, loginResult
 	}
