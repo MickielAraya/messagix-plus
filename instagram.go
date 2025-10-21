@@ -75,9 +75,10 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 	utils.Log.Info("Updating cookies from response headers")
 	cookies.UpdateFromResponse(ig.client.cookies, req.Header)
 
+	print(string(respBody))
+
 	utils.Log.Info("Unmarshaling XIGSharedData.ConfigData from response body: %s", string(respBody))
-	ig.client.configs.browserConfigTable.XIGSharedData.Raw = string(respBody)
-	err = ig.client.configs.browserConfigTable.XIGSharedData.ParseRaw()
+	err = json.Unmarshal(respBody, &ig.client.configs.browserConfigTable.XIGSharedData.ConfigData)
 	if err != nil {
 		utils.Log.Error("Failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %v", err)
 		return nil, fmt.Errorf("failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %w", err)
