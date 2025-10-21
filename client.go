@@ -106,8 +106,6 @@ func NewClient(platform types.Platform, cookies cookies.Cookies, logger zerolog.
 		return nil, err
 	}
 
-	fmt.Println("MADE IT HERE!!!")
-
 	return cli, nil
 }
 
@@ -118,17 +116,23 @@ func (c *Client) configureAfterLogin() error {
 	socket := c.NewSocketClient()
 	c.socket = socket
 
+	fmt.Println("MADE IT HERE 1 !!!")
+
 	moduleLoader := &ModuleParser{client: c}
 	err := moduleLoader.Load(c.getEndpoint("messages"))
 	if err != nil {
 		return err
 	}
 
+	fmt.Println("MADE IT HERE 2 !!!")
+
 	c.SyncManager = c.NewSyncManager()
 	err = c.configs.SetupConfigs()
 	if err != nil {
 		return fmt.Errorf("messagix-configs: failed to setup configs (%e)", err)
 	}
+
+	fmt.Println("MADE IT HERE 3 !!!")
 
 	return nil
 }
