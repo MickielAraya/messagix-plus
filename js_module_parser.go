@@ -1,4 +1,4 @@
-package messagix
+package messagixplus
 
 import (
 	"bytes"
@@ -11,10 +11,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MickielAraya/messagix-plus/cookies"
-	"github.com/MickielAraya/messagix-plus/methods"
-	"github.com/MickielAraya/messagix-plus/types"
-
+	cookies "github.com/MickielAraya/messagix-plus/cookies"
+	methods "github.com/MickielAraya/messagix-plus/methods"
+	types "github.com/MickielAraya/messagix-plus/types"
 	"golang.org/x/net/html"
 )
 

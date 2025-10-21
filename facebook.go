@@ -1,13 +1,13 @@
-package messagix
+package messagixplus
 
 import (
 	"fmt"
 	"reflect"
 	"strconv"
 
-	"github.com/MickielAraya/messagix-plus/cookies"
-	"github.com/MickielAraya/messagix-plus/crypto"
-	"github.com/MickielAraya/messagix-plus/types"
+	cookies "github.com/MickielAraya/messagix-plus/cookies"
+	crypto "github.com/MickielAraya/messagix-plus/crypto"
+	types "github.com/MickielAraya/messagix-plus/types"
 	"github.com/google/go-querystring/query"
 )
 
@@ -64,7 +64,7 @@ func (fb *FacebookMethods) Login(identifier, password string) (cookies.Cookies, 
 		return nil, err
 	}
 
-	loginResult := fb.client.Account.processLogin(nil, loginResp, loginBody)
+	loginResult := fb.client.Account.processLogin(loginResp, loginBody)
 	if loginResult != nil {
 		return nil, loginResult
 	}

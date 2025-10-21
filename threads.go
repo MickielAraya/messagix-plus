@@ -1,14 +1,14 @@
-package messagix
+package messagixplus
 
 import (
 	"fmt"
 	"log"
 	"strconv"
 
-	"github.com/MickielAraya/messagix-plus/methods"
-	"github.com/MickielAraya/messagix-plus/socket"
-	"github.com/MickielAraya/messagix-plus/table"
-	"github.com/MickielAraya/messagix-plus/types"
+	methods "github.com/MickielAraya/messagix-plus/methods"
+	socket "github.com/MickielAraya/messagix-plus/socket"
+	table "github.com/MickielAraya/messagix-plus/table"
+	types "github.com/MickielAraya/messagix-plus/types"
 )
 
 type Threads struct {

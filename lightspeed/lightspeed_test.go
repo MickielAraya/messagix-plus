@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/MickielAraya/messagix-plus"
+	messagix "github.com/MickielAraya/messagix-plus"
 	"github.com/MickielAraya/messagix-plus/graphql"
 	"github.com/MickielAraya/messagix-plus/lightspeed"
 	"github.com/MickielAraya/messagix-plus/table"

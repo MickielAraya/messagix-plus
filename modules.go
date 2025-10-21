@@ -1,4 +1,4 @@
-package messagix
+package messagixplus
 
 import (
 	"encoding/json"
@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MickielAraya/messagix-plus/graphql"
-	"github.com/MickielAraya/messagix-plus/lightspeed"
-	"github.com/MickielAraya/messagix-plus/methods"
-	"github.com/MickielAraya/messagix-plus/types"
+	graphql "github.com/MickielAraya/messagix-plus/graphql"
+	lightspeed "github.com/MickielAraya/messagix-plus/lightspeed"
+	methods "github.com/MickielAraya/messagix-plus/methods"
+	types "github.com/MickielAraya/messagix-plus/types"
 )
 
 var GraphQLData = &graphql.GraphQLTable{}

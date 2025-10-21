@@ -1,6 +1,6 @@
 package socket
 
-import "github.com/MickielAraya/messagix-plus/table"
+import table "github.com/MickielAraya/messagix-plus/table"
 
 type ReportAppStateTask struct {
 	AppState  table.AppState `json:"app_state"`

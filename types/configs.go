@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MickielAraya/messagix-plus/table"
+	table "github.com/MickielAraya/messagix-plus/table"
 )
 
 type MqttWebDeviceID struct {

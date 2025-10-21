@@ -1,11 +1,11 @@
-package messagix_test
+package messagixplus_test
 
 import (
 	"log"
 	"os"
 	"testing"
 
-	"github.com/MickielAraya/messagix-plus"
+	messagix "github.com/MickielAraya/messagix-plus"
 	"github.com/MickielAraya/messagix-plus/debug"
 	"github.com/MickielAraya/messagix-plus/types"
 )

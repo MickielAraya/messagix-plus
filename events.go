@@ -1,14 +1,15 @@
-package messagix
+package messagixplus
 
 import (
 	"encoding/json"
-	"github.com/MickielAraya/messagix-plus/lightspeed"
-	"github.com/MickielAraya/messagix-plus/methods"
-	"github.com/MickielAraya/messagix-plus/packets"
-	"github.com/MickielAraya/messagix-plus/socket"
-	"github.com/MickielAraya/messagix-plus/table"
-	"github.com/MickielAraya/messagix-plus/types"
 	"log"
+
+	lightspeed "github.com/MickielAraya/messagix-plus/lightspeed"
+	methods "github.com/MickielAraya/messagix-plus/methods"
+	packets "github.com/MickielAraya/messagix-plus/packets"
+	socket "github.com/MickielAraya/messagix-plus/socket"
+	table "github.com/MickielAraya/messagix-plus/table"
+	types "github.com/MickielAraya/messagix-plus/types"
 )
 
 func (s *Socket) handleBinaryMessage(data []byte) {

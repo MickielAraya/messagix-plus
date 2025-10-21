@@ -1,4 +1,4 @@
-package messagix
+package messagixplus
 
 import (
 	"encoding/json"
@@ -126,7 +126,7 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 	}
 	utils.Log.Info("Login request sent successfully, processing login result")
 
-	loginResult := ig.client.Account.processLogin(ig, loginResp, loginBody)
+	loginResult := ig.client.Account.processLogin(loginResp, loginBody)
 	if loginResult != nil {
 		utils.Log.Error("processLogin failed: %v", loginResult)
 		return nil, loginResult

@@ -1,11 +1,11 @@
-package messagix
+package messagixplus
 
 import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/MickielAraya/messagix-plus/methods"
-	"github.com/MickielAraya/messagix-plus/socket"
+	methods "github.com/MickielAraya/messagix-plus/methods"
+	socket "github.com/MickielAraya/messagix-plus/socket"
 )
 
 type TaskManager struct {

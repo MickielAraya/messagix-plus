@@ -1,18 +1,16 @@
-package messagix
+package messagixplus
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"reflect"
 	"strconv"
 	"sync"
-	"time"
-
-	"net/http"
 
 	"github.com/MickielAraya/messagix-plus/cookies"
 	"github.com/MickielAraya/messagix-plus/crypto"
@@ -55,19 +53,10 @@ type Client struct {
 
 // pass an empty zerolog.Logger{} for no logging
 func NewClient(platform types.Platform, cookies cookies.Cookies, logger zerolog.Logger, proxy string) (*Client, error) {
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConns:        100,
-			MaxIdleConnsPerHost: 10,
-			IdleConnTimeout:     90 * time.Second,
-			TLSHandshakeTimeout: 10 * time.Second,
-			DisableKeepAlives:   false,
-		},
-		Timeout: 30 * time.Second,
-	}
-
 	cli := &Client{
-		http:            httpClient,
+		http: &http.Client{
+			Transport: &http.Transport{},
+		},
 		cookies:         cookies,
 		Logger:          logger,
 		lsRequests:      0,

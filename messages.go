@@ -1,12 +1,12 @@
-package messagix
+package messagixplus
 
 import (
 	"fmt"
 	"log"
 	"strconv"
 
-	"github.com/MickielAraya/messagix-plus/socket"
-	"github.com/MickielAraya/messagix-plus/table"
+	socket "github.com/MickielAraya/messagix-plus/socket"
+	table "github.com/MickielAraya/messagix-plus/table"
 )
 
 type Messages struct {

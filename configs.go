@@ -1,4 +1,4 @@
-package messagix
+package messagixplus
 
 import (
 	"fmt"

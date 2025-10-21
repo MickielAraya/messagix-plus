@@ -1,15 +1,16 @@
-package messagix
+package messagixplus
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/MickielAraya/messagix-plus/methods"
-	"github.com/MickielAraya/messagix-plus/types"
-	"github.com/google/go-querystring/query"
 	"mime/multipart"
 	"net/textproto"
 	"reflect"
+
+	methods "github.com/MickielAraya/messagix-plus/methods"
+	types "github.com/MickielAraya/messagix-plus/types"
+	"github.com/google/go-querystring/query"
 )
 
 type MediaType string

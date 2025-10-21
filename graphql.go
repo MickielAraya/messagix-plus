@@ -1,15 +1,14 @@
-package messagix
+package messagixplus
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/MickielAraya/messagix-plus/graphql"
-	"github.com/MickielAraya/messagix-plus/lightspeed"
-	"github.com/MickielAraya/messagix-plus/table"
-	"github.com/MickielAraya/messagix-plus/types"
-
+	graphql "github.com/MickielAraya/messagix-plus/graphql"
+	lightspeed "github.com/MickielAraya/messagix-plus/lightspeed"
+	table "github.com/MickielAraya/messagix-plus/table"
+	types "github.com/MickielAraya/messagix-plus/types"
 	"github.com/google/go-querystring/query"
 )
 

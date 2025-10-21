@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MickielAraya/messagix-plus/table"
+	table "github.com/MickielAraya/messagix-plus/table"
 	"github.com/google/uuid"
 )
 

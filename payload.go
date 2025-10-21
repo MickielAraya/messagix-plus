@@ -1,8 +1,8 @@
-package messagix
+package messagixplus
 
 import (
-	"github.com/MickielAraya/messagix-plus/byter"
-	"github.com/MickielAraya/messagix-plus/packets"
+	byter "github.com/MickielAraya/messagix-plus/byter"
+	packets "github.com/MickielAraya/messagix-plus/packets"
 )
 
 type Payload interface {

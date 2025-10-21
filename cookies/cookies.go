@@ -11,12 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MickielAraya/messagix-plus/types"
+	types "github.com/MickielAraya/messagix-plus/types"
 	"golang.org/x/net/http/httpguts"
 )
 
 type Cookies interface {
-	ToString() string
 	GetValue(name string) string
 	GetViewports() (string, string)
 	IsLoggedIn() bool

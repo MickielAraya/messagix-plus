@@ -1,8 +1,6 @@
-package messagix
+package messagixplus
 
-import (
-	"github.com/MickielAraya/messagix-plus/byter"
-)
+import "github.com/MickielAraya/messagix-plus/byter"
 
 type Request struct {
 	PacketByte      uint8

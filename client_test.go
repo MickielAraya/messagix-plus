@@ -1,14 +1,15 @@
-package messagix_test
+package messagixplus_test
 
 import (
-	"github.com/MickielAraya/messagix-plus"
-	"github.com/MickielAraya/messagix-plus/cookies"
-	"github.com/MickielAraya/messagix-plus/debug"
-	"github.com/MickielAraya/messagix-plus/table"
-	"github.com/MickielAraya/messagix-plus/types"
 	"log"
 	"os"
 	"testing"
+
+	messagix "github.com/MickielAraya/messagix-plus"
+	cookies "github.com/MickielAraya/messagix-plus/cookies"
+	debug "github.com/MickielAraya/messagix-plus/debug"
+	table "github.com/MickielAraya/messagix-plus/table"
+	types "github.com/MickielAraya/messagix-plus/types"
 )
 
 var cli *messagix.Client

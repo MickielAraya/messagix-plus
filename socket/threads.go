@@ -1,8 +1,9 @@
 package socket
 
 import (
-	"github.com/MickielAraya/messagix-plus/table"
 	"strconv"
+
+	table "github.com/MickielAraya/messagix-plus/table"
 )
 
 type SendMessageTask struct {

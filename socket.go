@@ -1,4 +1,4 @@
-package messagix
+package messagixplus
 
 import (
 	"encoding/json"
@@ -11,10 +11,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MickielAraya/messagix-plus/cookies"
-	"github.com/MickielAraya/messagix-plus/methods"
-	"github.com/MickielAraya/messagix-plus/packets"
-	"github.com/MickielAraya/messagix-plus/types"
+	cookies "github.com/MickielAraya/messagix-plus/cookies"
+	methods "github.com/MickielAraya/messagix-plus/methods"
+	packets "github.com/MickielAraya/messagix-plus/packets"
+	types "github.com/MickielAraya/messagix-plus/types"
 	"github.com/gorilla/websocket"
 )
 

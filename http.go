@@ -1,4 +1,4 @@
-package messagix
+package messagixplus
 
 import (
 	"bytes"
@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/MickielAraya/messagix-plus/cookies"
-	"github.com/MickielAraya/messagix-plus/types"
+	cookies "github.com/MickielAraya/messagix-plus/cookies"
+	types "github.com/MickielAraya/messagix-plus/types"
 )
 
 type HttpQuery struct {
