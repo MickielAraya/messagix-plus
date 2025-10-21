@@ -226,13 +226,11 @@ func (m *ModuleParser) SSJSHandle(data interface{}) error {
 		case "__bbox":
 			boxMap, ok := v.(map[string]interface{})
 			if !ok {
-				log.Println("SSJSHandle: __bbox is not a map[string]interface{}")
 				continue
 			}
 			for boxKey, boxData := range boxMap {
 				boxDataArr, ok := boxData.([]interface{})
 				if !ok {
-					log.Printf("SSJSHandle: __bbox[%s] data is not []interface{} (got %T)\n", boxKey, boxData)
 					continue
 				}
 				switch boxKey {
