@@ -3,16 +3,17 @@ package messagix
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/MickielAraya/messagix-plus/graphql"
 	"github.com/MickielAraya/messagix-plus/lightspeed"
 	"github.com/MickielAraya/messagix-plus/table"
 	"github.com/MickielAraya/messagix-plus/types"
-	fhttp "github.com/bogdanfinn/fhttp"
+
 	"github.com/google/go-querystring/query"
 )
 
-func (c *Client) makeGraphQLRequest(name string, variables interface{}) (*fhttp.Response, []byte, error) {
+func (c *Client) makeGraphQLRequest(name string, variables interface{}) (*http.Response, []byte, error) {
 	graphQLDoc, ok := graphql.GraphQLDocs[name]
 	if !ok {
 		return nil, nil, fmt.Errorf("could not find graphql doc by the name of: %s", name)

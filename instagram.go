@@ -3,6 +3,7 @@ package messagix
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/MickielAraya/messagix-plus/data/responses"
 	"github.com/MickielAraya/messagix-plus/types"
 	"github.com/MickielAraya/messagix-plus/utils"
-	fhttp "github.com/bogdanfinn/fhttp"
+
 	"github.com/google/go-querystring/query"
 )
 
@@ -173,7 +174,7 @@ func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret stri
 		formBody += url.QueryEscape(kv.k) + "=" + url.QueryEscape(kv.v)
 	}
 
-	h := fhttp.Header{}
+	h := http.Header{}
 
 	h.Set("Host", "www.instagram.com")
 	h.Set("Cookie", cookies.CookiesToString(ig.client.cookies))

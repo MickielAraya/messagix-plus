@@ -3,14 +3,13 @@ package cookies
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/textproto"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
-
-	fhttp "github.com/bogdanfinn/fhttp"
 
 	"github.com/MickielAraya/messagix-plus/types"
 	"golang.org/x/net/http/httpguts"
@@ -56,7 +55,7 @@ func UpdateMultipleValues(cookieStruct Cookies, names []string, values []string)
 	return nil
 }
 
-func UpdateFromResponse(cookieStruct Cookies, h fhttp.Header) {
+func UpdateFromResponse(cookieStruct Cookies, h http.Header) {
 	cookies := ReadSetCookiesCustom(h)
 	for _, c := range cookies {
 		UpdateValue(cookieStruct, c.Name, c.Value)
@@ -87,7 +86,7 @@ func CookiesToString(c Cookies) string {
 	return s
 }
 
-func NewCookiesFromResponse(cookies []*fhttp.Cookie) Cookies {
+func NewCookiesFromResponse(cookies []*http.Cookie) Cookies {
 	return nil
 }
 
@@ -185,12 +184,12 @@ func getCookieValue(name string, cookieStruct Cookies) string {
 // https://github.com/golang/go/blob/master/src/net/http/cookie.go#L60
 // readSetCookies parses all "Set-Cookie" values from
 // the header h and returns the successfully parsed Cookies.
-func ReadSetCookiesCustom(h fhttp.Header) []*fhttp.Cookie {
+func ReadSetCookiesCustom(h http.Header) []*http.Cookie {
 	cookieCount := len(h["Set-Cookie"])
 	if cookieCount == 0 {
-		return []*fhttp.Cookie{}
+		return []*http.Cookie{}
 	}
-	cookies := make([]*fhttp.Cookie, 0, cookieCount)
+	cookies := make([]*http.Cookie, 0, cookieCount)
 	for _, line := range h["Set-Cookie"] {
 		parts := strings.Split(textproto.TrimString(line), ";")
 		if len(parts) == 1 && parts[0] == "" {
@@ -209,7 +208,7 @@ func ReadSetCookiesCustom(h fhttp.Header) []*fhttp.Cookie {
 		if !ok {
 			continue
 		}
-		c := &fhttp.Cookie{
+		c := &http.Cookie{
 			Name:  name,
 			Value: value,
 			Raw:   line,
@@ -234,18 +233,18 @@ func ReadSetCookiesCustom(h fhttp.Header) []*fhttp.Cookie {
 			case "samesite":
 				lowerVal, ascii := ToLower(val)
 				if !ascii {
-					c.SameSite = fhttp.SameSiteDefaultMode
+					c.SameSite = http.SameSiteDefaultMode
 					continue
 				}
 				switch lowerVal {
 				case "lax":
-					c.SameSite = fhttp.SameSiteLaxMode
+					c.SameSite = http.SameSiteLaxMode
 				case "strict":
-					c.SameSite = fhttp.SameSiteStrictMode
+					c.SameSite = http.SameSiteStrictMode
 				case "none":
-					c.SameSite = fhttp.SameSiteNoneMode
+					c.SameSite = http.SameSiteNoneMode
 				default:
-					c.SameSite = fhttp.SameSiteDefaultMode
+					c.SameSite = http.SameSiteDefaultMode
 				}
 				continue
 			case "secure":

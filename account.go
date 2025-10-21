@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/MickielAraya/messagix-plus/cookies"
 	"github.com/MickielAraya/messagix-plus/socket"
 	"github.com/MickielAraya/messagix-plus/table"
 	"github.com/MickielAraya/messagix-plus/types"
-	"github.com/google/uuid"
 
-	fhttp "github.com/bogdanfinn/fhttp"
+	"github.com/google/uuid"
 )
 
 type Account struct {
@@ -21,7 +21,7 @@ type Account struct {
 	TotpSecret string
 }
 
-func (a *Account) processLogin(ig *InstagramMethods, resp *fhttp.Response, respBody []byte) error {
+func (a *Account) processLogin(ig *InstagramMethods, resp *http.Response, respBody []byte) error {
 	statusCode := resp.StatusCode
 	var err error
 	switch a.client.platform {

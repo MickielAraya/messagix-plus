@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"strconv"
 
 	"github.com/MickielAraya/messagix-plus/cookies"
 	"github.com/MickielAraya/messagix-plus/types"
-	fhttp "github.com/bogdanfinn/fhttp"
 )
 
 type HttpQuery struct {
@@ -75,8 +75,8 @@ func (c *Client) NewHttpQuery() *HttpQuery {
 	return query
 }
 
-func (c *Client) MakeRequest(url string, method string, headers fhttp.Header, payload []byte, contentType types.ContentType) (*fhttp.Response, []byte, error) {
-	newRequest, err := fhttp.NewRequest(method, url, bytes.NewBuffer(payload))
+func (c *Client) MakeRequest(url string, method string, headers http.Header, payload []byte, contentType types.ContentType) (*http.Response, []byte, error) {
+	newRequest, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -109,9 +109,9 @@ func (c *Client) MakeRequest(url string, method string, headers fhttp.Header, pa
 	return response, responseBody, nil
 }
 
-func (c *Client) buildHeaders(withCookies bool) fhttp.Header {
+func (c *Client) buildHeaders(withCookies bool) http.Header {
 
-	headers := fhttp.Header{}
+	headers := http.Header{}
 	headers.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
 	headers.Add("accept-language", "en-US,en;q=0.9")
 	headers.Add("dpr", "1.125")
@@ -142,7 +142,7 @@ func (c *Client) buildHeaders(withCookies bool) fhttp.Header {
 	return headers
 }
 
-func (c *Client) addFacebookHeaders(h *fhttp.Header) {
+func (c *Client) addFacebookHeaders(h *http.Header) {
 	if c.configs != nil {
 		if c.configs.LsdToken != "" {
 			h.Add("x-fb-lsd", c.configs.LsdToken)
@@ -150,7 +150,7 @@ func (c *Client) addFacebookHeaders(h *fhttp.Header) {
 	}
 }
 
-func (c *Client) addInstagramHeaders(h *fhttp.Header) {
+func (c *Client) addInstagramHeaders(h *http.Header) {
 	if c.configs != nil {
 		csrfToken := c.cookies.GetValue("csrftoken")
 		mid := c.cookies.GetValue("mid")
@@ -178,7 +178,7 @@ func (c *Client) addInstagramHeaders(h *fhttp.Header) {
 	}
 }
 
-func (c *Client) findCookie(cookies []*fhttp.Cookie, name string) *fhttp.Cookie {
+func (c *Client) findCookie(cookies []*http.Cookie, name string) *http.Cookie {
 	for _, c := range cookies {
 		if c.Name == name {
 			return c
@@ -187,7 +187,7 @@ func (c *Client) findCookie(cookies []*fhttp.Cookie, name string) *fhttp.Cookie 
 	return nil
 }
 
-func (a *Account) sendLoginRequest(form url.Values, loginUrl string) (*fhttp.Response, []byte, error) {
+func (a *Account) sendLoginRequest(form url.Values, loginUrl string) (*http.Response, []byte, error) {
 	h := a.buildLoginHeaders()
 	loginPayload := []byte(form.Encode())
 
@@ -199,7 +199,7 @@ func (a *Account) sendLoginRequest(form url.Values, loginUrl string) (*fhttp.Res
 	return resp, respBody, nil
 }
 
-func (a *Account) buildLoginHeaders() fhttp.Header {
+func (a *Account) buildLoginHeaders() http.Header {
 	h := a.client.buildHeaders(true)
 	if a.client.platform == types.Facebook {
 		h = a.addFacebookHeaders(h)
@@ -212,7 +212,7 @@ func (a *Account) buildLoginHeaders() fhttp.Header {
 	return h
 }
 
-func (a *Account) addFacebookHeaders(h fhttp.Header) fhttp.Header {
+func (a *Account) addFacebookHeaders(h http.Header) http.Header {
 	h.Add("sec-fetch-dest", "document")
 	h.Add("sec-fetch-mode", "navigate")
 	h.Add("sec-fetch-site", "same-origin") // header is required
@@ -221,7 +221,7 @@ func (a *Account) addFacebookHeaders(h fhttp.Header) fhttp.Header {
 	return h
 }
 
-func (a *Account) addInstagramHeaders(h fhttp.Header) fhttp.Header {
+func (a *Account) addInstagramHeaders(h http.Header) http.Header {
 	h.Add("x-instagram-ajax", strconv.Itoa(int(a.client.configs.browserConfigTable.SiteData.ServerRevision)))
 	h.Add("sec-fetch-dest", "empty")
 	h.Add("sec-fetch-mode", "cors")

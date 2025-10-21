@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -13,7 +14,7 @@ import (
 	"github.com/MickielAraya/messagix-plus/cookies"
 	"github.com/MickielAraya/messagix-plus/methods"
 	"github.com/MickielAraya/messagix-plus/types"
-	fhttp "github.com/bogdanfinn/fhttp"
+
 	"golang.org/x/net/html"
 )
 
@@ -276,7 +277,7 @@ func (m *ModuleParser) requireLazyModule(data string) error {
 }
 
 func (m *ModuleParser) crawlJavascriptFile(href string) (bool, error) {
-	_, jsContent, err := m.client.MakeRequest(href, "GET", fhttp.Header{}, nil, types.NONE)
+	_, jsContent, err := m.client.MakeRequest(href, "GET", http.Header{}, nil, types.NONE)
 	if err != nil {
 		return false, err
 	}

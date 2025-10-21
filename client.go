@@ -19,7 +19,7 @@ import (
 	"github.com/MickielAraya/messagix-plus/data/endpoints"
 	"github.com/MickielAraya/messagix-plus/table"
 	"github.com/MickielAraya/messagix-plus/types"
-	fhttp "github.com/bogdanfinn/fhttp"
+
 	"github.com/google/go-querystring/query"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/slices"
@@ -37,7 +37,7 @@ type Client struct {
 	Facebook  *FacebookMethods
 	Logger    zerolog.Logger
 
-	http         *fhttp.Client
+	http         *http.Client
 	socket       *Socket
 	eventHandler EventHandler
 	configs      *Configs
@@ -56,8 +56,8 @@ type Client struct {
 
 // pass an empty zerolog.Logger{} for no logging
 func NewClient(platform types.Platform, cookies cookies.Cookies, logger zerolog.Logger, proxy string) (*Client, error) {
-	httpClient := &fhttp.Client{
-		Transport: &fhttp.Transport{
+	httpClient := &http.Client{
+		Transport: &http.Transport{
 			MaxIdleConns:        100,
 			MaxIdleConnsPerHost: 10,
 			IdleConnTimeout:     90 * time.Second,
@@ -165,8 +165,8 @@ func (c *Client) SetProxy(proxy string) error {
 
 	fmt.Println(proxyParsed)
 
-	c.http.Transport = &fhttp.Transport{
-		Proxy: fhttp.ProxyURL(proxyParsed),
+	c.http.Transport = &http.Transport{
+		Proxy: http.ProxyURL(proxyParsed),
 	}
 	c.Logger.Debug().Any("addr", proxyParsed.Host).Msg("Proxy Updated")
 	return nil
@@ -278,7 +278,7 @@ func (c *Client) enableRedirects() {
 }
 
 func (c *Client) disableRedirects() {
-	c.http.CheckRedirect = func(req *fhttp.Request, via []*fhttp.Request) error {
+	c.http.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return ErrRedirectAttempted
 	}
 }

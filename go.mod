@@ -5,7 +5,7 @@ go 1.24.1
 toolchain go1.24.9
 
 require (
-	github.com/bogdanfinn/fhttp v0.6.2
+	github.com/bogdanfinn/http v0.6.2
 	github.com/fatih/color v1.18.0
 	github.com/google/go-querystring v1.1.0
 	github.com/gorilla/websocket v1.5.0
