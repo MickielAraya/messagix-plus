@@ -121,7 +121,6 @@ func (c *Client) configureAfterLogin() error {
 
 func (c *Client) loadLoginPage() *ModuleParser {
 	moduleLoader := &ModuleParser{client: c}
-	fmt.Println(c.getEndpoint("login_page"))
 	moduleLoader.Load(c.getEndpoint("login_page"))
 	return moduleLoader
 }
