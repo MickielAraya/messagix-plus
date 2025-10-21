@@ -14,7 +14,8 @@ import (
 )
 
 type Account struct {
-	client     *Client
+	client *Client
+
 	Username   string
 	Password   string
 	TotpSecret string
