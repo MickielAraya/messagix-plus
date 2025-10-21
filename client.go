@@ -116,18 +116,12 @@ func (c *Client) configureAfterLogin() error {
 	socket := c.NewSocketClient()
 	c.socket = socket
 
-	fmt.Println("MADE IT HERE 1 !!!")
-
 	moduleLoader := &ModuleParser{client: c}
-
-	fmt.Println("MADE IT HERE 2 !!!")
-
 	err := moduleLoader.Load(c.getEndpoint("messages"))
 	if err != nil {
+		fmt.Println(c, c.getEndpoint("messages"))
 		return err
 	}
-
-	fmt.Println("MADE IT HERE 3 !!!")
 
 	c.SyncManager = c.NewSyncManager()
 	err = c.configs.SetupConfigs()
