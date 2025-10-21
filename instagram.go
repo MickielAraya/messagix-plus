@@ -75,8 +75,6 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 	utils.Log.Info("Updating cookies from response headers")
 	cookies.UpdateFromResponse(ig.client.cookies, req.Header)
 
-	print(string(respBody))
-
 	utils.Log.Info("Unmarshaling XIGSharedData.ConfigData from response body: %s", string(respBody))
 	err = json.Unmarshal(respBody, &ig.client.configs.browserConfigTable.XIGSharedData.ConfigData)
 	if err != nil {
