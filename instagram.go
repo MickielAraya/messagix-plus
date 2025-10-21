@@ -21,76 +21,84 @@ type InstagramMethods struct {
 }
 
 func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cookies.Cookies, error) {
-	logger := ig.client.Logger.With().Str("username", identifier).Logger()
-	logger.Info().Msg("Starting Instagram Login procedure")
-
+	utils.Log.Info("Starting Instagram login for user: %s", identifier)
 	ig.client.Account.Username = identifier
 	ig.client.Account.Password = password
 	ig.client.Account.TotpSecret = totpSecret
 
-	logger.Debug().Msg("Loading login page")
+	utils.Log.Info("Loading login page")
 	ig.client.loadLoginPage()
+	utils.Log.Info("Setting up configs")
 	if err := ig.client.configs.SetupConfigs(); err != nil {
-		logger.Error().Err(err).Msg("Failed to setup configs after loading login page")
+		utils.Log.Error("Failed to setup configs: %v", err)
 		return nil, err
 	}
 
 	h := ig.client.buildHeaders(false)
+	utils.Log.Info("Headers built for login")
 
+	// Add Instagram-specific login headers
 	h.Add("x-web-device-id", ig.client.cookies.GetValue("ig_did"))
 	h.Add("sec-fetch-dest", "empty")
 	h.Add("sec-fetch-mode", "cors")
 	h.Add("sec-fetch-site", "same-origin")
 	h.Add("x-requested-with", "XMLHttpRequest")
 	h.Add("referer", ig.client.getEndpoint("login_page"))
+	utils.Log.Info("Attached additional Instagram headers")
 
 	login_page_v1 := ig.client.getEndpoint("web_login_page_v1")
-	logger.Debug().Str("url", login_page_v1).Msg("Fetching web_login_page_v1")
+	utils.Log.Info("Making GET request to login page v1: %s", login_page_v1)
 	_, _, err := ig.client.MakeRequest(login_page_v1, "GET", h, nil, types.NONE)
 	if err != nil {
-		logger.Error().Err(err).Str("url", login_page_v1).Msg("Failed to fetch web_login_page_v1 for instagram login")
-		return nil, fmt.Errorf("failed to fetch %s for instagram login: %e", login_page_v1, err)
+		utils.Log.Error("Failed to fetch %s for instagram login: %v", login_page_v1, err)
+		return nil, fmt.Errorf("failed to fetch %s for instagram login: %w", login_page_v1, err)
 	}
+	utils.Log.Info("Successfully fetched login page v1")
 
-	logger.Debug().Msg("Sending cookie consent")
-	err = ig.client.sendCookieConsent("")
+	utils.Log.Info("Sending cookie consent")
+	err = ig.client.sendCookieConsent()
 	if err != nil {
-		logger.Error().Err(err).Msg("Failed to send cookie consent")
+		utils.Log.Error("Failed at sendCookieConsent: %v", err)
 		return nil, err
 	}
+	utils.Log.Info("Cookie consent sent")
 
 	web_shared_data_v1 := ig.client.getEndpoint("web_shared_data_v1")
-	logger.Debug().Str("url", web_shared_data_v1).Msg("Fetching web_shared_data_v1")
+	utils.Log.Info("Making GET request to web shared data v1: %s", web_shared_data_v1)
 	req, respBody, err := ig.client.MakeRequest(web_shared_data_v1, "GET", h, nil, types.NONE) // returns actual machineId you're supposed to use
 	if err != nil {
-		logger.Error().Err(err).Str("url", web_shared_data_v1).Msg("Failed to fetch web_shared_data_v1 for instagram login")
-		return nil, fmt.Errorf("failed to fetch %s for instagram login: %e", web_shared_data_v1, err)
+		utils.Log.Error("Failed to fetch %s for instagram login: %v", web_shared_data_v1, err)
+		return nil, fmt.Errorf("failed to fetch %s for instagram login: %w", web_shared_data_v1, err)
 	}
+	utils.Log.Info("Successfully fetched web shared data v1")
 
-	logger.Debug().Msg("Updating cookies from response headers")
+	utils.Log.Info("Updating cookies from response headers")
 	cookies.UpdateFromResponse(ig.client.cookies, req.Header)
 
-	logger.Debug().Msg("Unmarshalling web_shared_data_v1 resp body into XIGSharedData.ConfigData")
+	utils.Log.Info("Unmarshaling XIGSharedData.ConfigData from response body: %s", string(respBody))
 	err = json.Unmarshal(respBody, &ig.client.configs.browserConfigTable.XIGSharedData.ConfigData)
 	if err != nil {
-		logger.Error().Err(err).Msg("Failed to unmarshal web_shared_data_v1 response")
-		return nil, fmt.Errorf("failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %e", err)
+		utils.Log.Error("Failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %v", err)
+		return nil, fmt.Errorf("failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %w", err)
 	}
+	utils.Log.Info("Successfully unmarshaled XIGSharedData.ConfigData")
 
 	encryptionConfig := ig.client.configs.browserConfigTable.XIGSharedData.ConfigData.Encryption
-	logger.Debug().Str("keyId", encryptionConfig.KeyID).Msg("Parsing keyId for Instagram password encryption")
+	utils.Log.Info("Converting encryptionConfig.KeyID to int for password encryption")
 	pubKeyId, err := strconv.Atoi(encryptionConfig.KeyID)
 	if err != nil {
-		logger.Error().Err(err).Str("keyId", encryptionConfig.KeyID).Msg("Failed to convert keyId for instagram password encryption to int")
-		return nil, fmt.Errorf("failed to convert keyId for instagram password encryption to int: %e", err)
+		utils.Log.Error("Failed to convert keyId for instagram password encryption to int: %v", err)
+		return nil, fmt.Errorf("failed to convert keyId for instagram password encryption to int: %w", err)
 	}
+	utils.Log.Info("Successfully converted keyId: %v", pubKeyId)
 
-	logger.Debug().Str("pubKeyId", encryptionConfig.KeyID).Msg("Encrypting Instagram password")
+	utils.Log.Info("Encrypting Instagram password")
 	encryptedPw, err := crypto.EncryptPassword(int(types.Instagram), pubKeyId, encryptionConfig.PublicKey, password)
 	if err != nil {
-		logger.Error().Err(err).Msg("Failed to encrypt Instagram password")
-		return nil, fmt.Errorf("failed to encrypt password for instagram: %e", err)
+		utils.Log.Error("Failed to encrypt password for instagram: %v", err)
+		return nil, fmt.Errorf("failed to encrypt password for instagram: %w", err)
 	}
+	utils.Log.Info("Password encrypted")
 
 	loginForm := &types.InstagramLoginPayload{
 		Password:             encryptedPw,
@@ -100,28 +108,30 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 		Username:             identifier,
 	}
 
-	logger.Debug().Msg("Building login form values")
+	utils.Log.Info("Encoding login payload into URL values form")
 	form, err := query.Values(&loginForm)
 	if err != nil {
-		logger.Error().Err(err).Msg("Failed to encode login form values")
-		return nil, err
+		utils.Log.Error("Failed to encode login form payload: %v", err)
+		return nil, fmt.Errorf("failed to encode login form payload: %w", err)
 	}
+	utils.Log.Info("Login form encoded")
+
 	web_login_ajax_v1 := ig.client.getEndpoint("web_login_ajax_v1")
-	logger.Debug().Str("url", web_login_ajax_v1).Msg("Sending login request")
+	utils.Log.Info("Sending login request to %s", web_login_ajax_v1)
 	loginResp, loginBody, err := ig.client.Account.sendLoginRequest(form, web_login_ajax_v1)
 	if err != nil {
-		logger.Error().Err(err).Str("url", web_login_ajax_v1).Msg("Failed to send login request")
+		utils.Log.Error("Failed to send login request to %s: %v", web_login_ajax_v1, err)
 		return nil, err
 	}
+	utils.Log.Info("Login request sent successfully, processing login result")
 
-	logger.Debug().Msg("Processing login result")
 	loginResult := ig.client.Account.processLogin(ig, loginResp, loginBody)
 	if loginResult != nil {
-		logger.Error().Err(loginResult).Msg("Login result contained an error")
+		utils.Log.Error("processLogin failed: %v", loginResult)
 		return nil, loginResult
 	}
 
-	logger.Info().Msg("Instagram login successful")
+	utils.Log.Success("Instagram login process completed successfully for user: %s", identifier)
 	return ig.client.cookies, nil
 }
 
