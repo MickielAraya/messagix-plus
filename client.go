@@ -101,12 +101,12 @@ func NewClient(platform types.Platform, cookies cookies.Cookies, logger zerolog.
 		return cli, nil
 	}
 
-	fmt.Println("MADE IT HERE!!!")
-
 	err := cli.configureAfterLogin()
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("MADE IT HERE!!!")
 
 	return cli, nil
 }
