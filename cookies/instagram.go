@@ -7,11 +7,15 @@ type InstagramCookies struct {
 	CsrfToken  string `cookie:"csrftoken,omitempty" json:"CsrfToken,omitempty"`
 	MachineId  string `cookie:"mid,omitempty" json:"MachineId,omitempty"`
 	IgDeviceId string `cookie:"ig_did,omitempty" json:"IgDeviceId,omitempty"`
-	Rur 	   string `cookie:"rur,omitempty" json:"Rur,omitempty"`
-	UserId 	   string `cookie:"ds_user_id,omitempty" json:"UserId,omitempty"`
-	ShbId 	   string `cookie:"shbid,omitempty" json:"ShbId,omitempty"`
-	Shbts 	   string `cookie:"shbts,omitempty" json:"Shbts,omitempty"`
+	Rur        string `cookie:"rur,omitempty" json:"Rur,omitempty"`
+	UserId     string `cookie:"ds_user_id,omitempty" json:"UserId,omitempty"`
+	ShbId      string `cookie:"shbid,omitempty" json:"ShbId,omitempty"`
+	Shbts      string `cookie:"shbts,omitempty" json:"Shbts,omitempty"`
 	IgWWWClaim string `json:"IgWWWClaim,omitempty"`
+}
+
+func (ig *InstagramCookies) ToString() string {
+	return CookiesToString(ig)
 }
 
 func (ig *InstagramCookies) ToJSON() ([]byte, error) {

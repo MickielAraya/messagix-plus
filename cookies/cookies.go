@@ -17,6 +17,7 @@ import (
 )
 
 type Cookies interface {
+	ToString() string
 	GetValue(name string) string
 	GetViewports() (string, string)
 	IsLoggedIn() bool
