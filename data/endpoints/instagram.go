@@ -23,7 +23,7 @@ var InstagramEndpoints = map[string]string{
 	"web_shared_data_v1": instaWebApiV1Url + "/data/shared_data/",
 	"web_login_ajax_v1":  instaWebApiV1Url + "/accounts/login/ajax/",
 
-	"create_thread":    instaWebApiV1Url + "/direct_v2/create_group_thread/",
+	"create_thread":    instaApiV1Url + "/direct_v2/create_group_thread/",
 	"web_profile_info": instaApiV1Url + "/users/web_profile_info/?",
 	"reels_media":      instaApiV1Url + "/feed/reels_media/?",
 	"media_info":       instaApiV1Url + "/media/%s/info/",
