@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -167,7 +166,6 @@ type XIGSharedData struct {
 }
 
 func (xig *XIGSharedData) ParseRaw() error {
-	fmt.Println("xig.Raw", xig.Raw)
 	return json.Unmarshal([]byte(xig.Raw), &xig.ConfigData)
 }
 

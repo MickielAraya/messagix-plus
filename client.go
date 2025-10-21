@@ -163,8 +163,6 @@ func (c *Client) SetProxy(proxy string) error {
 		return err
 	}
 
-	fmt.Println(proxyParsed)
-
 	c.http.Transport = &http.Transport{
 		Proxy: http.ProxyURL(proxyParsed),
 	}
