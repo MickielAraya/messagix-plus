@@ -20,12 +20,18 @@ type InstagramMethods struct {
 	client *Client
 }
 
-func (ig *InstagramMethods) Login(identifier, password string) (cookies.Cookies, error) {
+func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cookies.Cookies, error) {
+	ig.client.Account.Username = identifier
+	ig.client.Account.Password = password
+	ig.client.Account.TotpSecret = totpSecret
+
 	ig.client.loadLoginPage()
 	if err := ig.client.configs.SetupConfigs(); err != nil {
 		return nil, err
 	}
+
 	h := ig.client.buildHeaders(false)
+
 	h.Add("x-web-device-id", ig.client.cookies.GetValue("ig_did"))
 	h.Add("sec-fetch-dest", "empty")
 	h.Add("sec-fetch-mode", "cors")
