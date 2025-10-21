@@ -1,34 +1,38 @@
 # Messagix
+
 Messagix is a easy-to-use Go library for interacting with facebooks/metas lightspeed API.
 
-- [x] Login
-	- [x] Email
-	- [ ] Phone
-- [x] Fetch contact information
-- [x] Typing Notifications
-- [x] Fetch Messages (with message history support!)
-- [x] Send Messages
-	- [x] Videos
-	- [x] External Media
-	- [x] Images
-	- [x] Replies
-	- [x] Forwarding
-	- [x] Stickers/Decals
-- [x] Send Reactions
-	- [x] Remove
-	- [x] Update
-	- [x] New
-- [x] Appstate
-	- [x] Online
-	- [x] Offline
+-   [x] Login
+    -   [x] Email
+    -   [ ] Phone
+-   [x] Fetch contact information
+-   [x] Typing Notifications
+-   [x] Fetch Messages (with message history support!)
+-   [x] Send Messages
+    -   [x] Videos
+    -   [x] External Media
+    -   [x] Images
+    -   [x] Replies
+    -   [x] Forwarding
+    -   [x] Stickers/Decals
+-   [x] Send Reactions
+    -   [x] Remove
+    -   [x] Update
+    -   [x] New
+-   [x] Appstate
+    -   [x] Online
+    -   [x] Offline
+
 ## Installation
 
 Use the [package manager](https://golang.org/dl/) to install messagix.
+
 ```bash
-go get github.com/0xzer/messagix
+go get github.com/MickielAraya/messagix-plus
 ```
 
 # Simplistic Usage
+
 ```go
 package client_test
 
@@ -36,9 +40,9 @@ import (
 	"log"
 	"os"
 	"testing"
-	"github.com/0xzer/messagix"
-	"github.com/0xzer/messagix/debug"
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus"
+	"github.com/MickielAraya/messagix-plus/debug"
+	"github.com/MickielAraya/messagix-plus/types"
 )
 
 var cli *messagix.Client
@@ -96,13 +100,14 @@ func evHandler(evt interface{}) {
 ```
 
 # Login
+
 ```go
 package main
 
 import (
 	"log"
-	"github.com/0xzer/messagix"
-	"github.com/0xzer/messagix/debug"
+	"github.com/MickielAraya/messagix-plus"
+	"github.com/MickielAraya/messagix-plus/debug"
 )
 
 func main() {

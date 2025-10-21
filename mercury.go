@@ -4,22 +4,23 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/MickielAraya/messagix-plus/methods"
+	"github.com/MickielAraya/messagix-plus/types"
+	"github.com/google/go-querystring/query"
 	"mime/multipart"
 	"net/textproto"
 	"reflect"
-	"github.com/0xzer/messagix/methods"
-	"github.com/0xzer/messagix/types"
-	"github.com/google/go-querystring/query"
 )
 
 type MediaType string
+
 const (
 	IMAGE_JPEG MediaType = "image/jpeg"
-	VIDEO_MP4 MediaType = "video/mp4"
+	VIDEO_MP4  MediaType = "video/mp4"
 )
 
 type MercuryUploadMedia struct {
-	Filename string
+	Filename  string
 	MediaType MediaType
 	MediaData []byte
 }
@@ -46,7 +47,7 @@ func (c *Client) SendMercuryUploadRequest(medias []*MercuryUploadMedia) ([]*type
 		h.Add("sec-fetch-dest", "empty")
 		h.Add("sec-fetch-mode", "cors")
 		h.Add("sec-fetch-site", "same-origin") // header is required
-		
+
 		_, respBody, err := c.MakeRequest(url, "POST", h, payload, types.NONE)
 		if err != nil {
 			return nil, fmt.Errorf("failed to send MercuryUploadRequest: %e", err)
@@ -110,10 +111,10 @@ func (c *Client) NewMercuryMediaPayload(media *MercuryUploadMedia) ([]byte, stri
 	if err != nil {
 		return nil, "", fmt.Errorf("messagix-mercury: Failed to set boundary (%e)", err)
 	}
-	
+
 	partHeader := textproto.MIMEHeader{
 		"Content-Disposition": []string{`form-data; name="farr"; filename="` + media.Filename + `"`},
-		"Content-Type": []string{string(media.MediaType)},
+		"Content-Type":        []string{string(media.MediaType)},
 	}
 
 	mediaPart, err := writer.CreatePart(partHeader)

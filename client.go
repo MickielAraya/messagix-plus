@@ -13,11 +13,11 @@ import (
 
 	"net/http"
 
-	"github.com/0xzer/messagix/cookies"
-	"github.com/0xzer/messagix/crypto"
-	"github.com/0xzer/messagix/data/endpoints"
-	"github.com/0xzer/messagix/table"
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus/cookies"
+	"github.com/MickielAraya/messagix-plus/crypto"
+	"github.com/MickielAraya/messagix-plus/data/endpoints"
+	"github.com/MickielAraya/messagix-plus/table"
+	"github.com/MickielAraya/messagix-plus/types"
 	fhttp "github.com/bogdanfinn/fhttp"
 	"github.com/google/go-querystring/query"
 	"github.com/rs/zerolog"

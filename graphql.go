@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/0xzer/messagix/graphql"
-	"github.com/0xzer/messagix/lightspeed"
-	"github.com/0xzer/messagix/table"
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus/graphql"
+	"github.com/MickielAraya/messagix-plus/lightspeed"
+	"github.com/MickielAraya/messagix-plus/table"
+	"github.com/MickielAraya/messagix-plus/types"
 	fhttp "github.com/bogdanfinn/fhttp"
 	"github.com/google/go-querystring/query"
 )

@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/0xzer/messagix"
-	"github.com/0xzer/messagix/graphql"
-	"github.com/0xzer/messagix/lightspeed"
-	"github.com/0xzer/messagix/table"
+	"github.com/MickielAraya/messagix-plus"
+	"github.com/MickielAraya/messagix-plus/graphql"
+	"github.com/MickielAraya/messagix-plus/lightspeed"
+	"github.com/MickielAraya/messagix-plus/table"
 )
 
 func TestDecode(t *testing.T) {

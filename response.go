@@ -4,27 +4,28 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/0xzer/messagix/byter"
-	"github.com/0xzer/messagix/packets"
+	"github.com/MickielAraya/messagix-plus/byter"
+	"github.com/MickielAraya/messagix-plus/packets"
 )
 
 type ResponseData interface {
 	Finish() ResponseData
 	SetIdentifier(identifier int16)
 }
-type responseHandler func() (ResponseData)
+type responseHandler func() ResponseData
+
 var responseMap = map[uint8]responseHandler{
-	packets.CONNACK: func() ResponseData {return &Event_Ready{}},
-	packets.PUBACK: func() ResponseData {return &Event_PublishACK{}},
-	packets.SUBACK: func() ResponseData {return &Event_SubscribeACK{}},
-	packets.PUBLISH: func() ResponseData {return &Event_PublishResponse{}},
-	packets.PINGRESP: func () ResponseData {return &Event_PingResp{}},
+	packets.CONNACK:  func() ResponseData { return &Event_Ready{} },
+	packets.PUBACK:   func() ResponseData { return &Event_PublishACK{} },
+	packets.SUBACK:   func() ResponseData { return &Event_SubscribeACK{} },
+	packets.PUBLISH:  func() ResponseData { return &Event_PublishResponse{} },
+	packets.PINGRESP: func() ResponseData { return &Event_PingResp{} },
 }
 
 type Response struct {
-	PacketByte uint8
-    RemainingLength uint32 `vlq:"true"`
-	ResponseData ResponseData
+	PacketByte      uint8
+	RemainingLength uint32 `vlq:"true"`
+	ResponseData    ResponseData
 }
 
 func (r *Response) Read(data []byte) error {

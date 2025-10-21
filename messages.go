@@ -5,8 +5,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/0xzer/messagix/socket"
-	"github.com/0xzer/messagix/table"
+	"github.com/MickielAraya/messagix-plus/socket"
+	"github.com/MickielAraya/messagix-plus/table"
 )
 
 type Messages struct {
@@ -20,10 +20,10 @@ func (m *Messages) SendReaction(threadId int64, messageId string, reaction strin
 	}
 	tskm := m.client.NewTaskManager()
 	tskm.AddNewTask(&socket.SendReactionTask{
-		ThreadKey: threadId,
-		MessageID: messageId,
-		ActorID: int64(accId),
-		Reaction: reaction,
+		ThreadKey:       threadId,
+		MessageID:       messageId,
+		ActorID:         int64(accId),
+		Reaction:        reaction,
 		SendAttribution: table.MESSENGER_INBOX_IN_THREAD,
 	})
 
@@ -31,12 +31,11 @@ func (m *Messages) SendReaction(threadId int64, messageId string, reaction strin
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	packetId, err := m.client.socket.makeLSRequest(payload, 3)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 
 	resp := m.client.socket.responseHandler.waitForPubResponseDetails(packetId)
 	if resp == nil {
@@ -50,7 +49,7 @@ func (m *Messages) SendReaction(threadId int64, messageId string, reaction strin
 func (m *Messages) DeleteMessage(messageId string, deleteForMeOnly bool) (*table.LSTable, error) {
 	var taskData socket.Task
 	if deleteForMeOnly {
-		taskData = &socket.DeleteMessageMeOnlyTask{MessageId: messageId,}
+		taskData = &socket.DeleteMessageMeOnlyTask{MessageId: messageId}
 	} else {
 		taskData = &socket.DeleteMessageTask{MessageId: messageId}
 	}
@@ -61,7 +60,7 @@ func (m *Messages) DeleteMessage(messageId string, deleteForMeOnly bool) (*table
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	packetId, err := m.client.socket.makeLSRequest(payload, 3)
 	if err != nil {
 		log.Fatal(err)
@@ -72,6 +71,6 @@ func (m *Messages) DeleteMessage(messageId string, deleteForMeOnly bool) (*table
 		return nil, fmt.Errorf("failed to receive response from socket after deleting message. packetId: %d", packetId)
 	}
 	resp.Finish()
-	
+
 	return &resp.Table, nil
 }

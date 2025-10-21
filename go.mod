@@ -1,4 +1,4 @@
-module github.com/0xzer/messagix
+module github.com/MickielAraya/messagix-plus
 
 go 1.24.1
 

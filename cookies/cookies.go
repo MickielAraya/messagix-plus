@@ -12,7 +12,7 @@ import (
 
 	fhttp "github.com/bogdanfinn/fhttp"
 
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus/types"
 	"golang.org/x/net/http/httpguts"
 )
 

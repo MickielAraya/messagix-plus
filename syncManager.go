@@ -3,12 +3,12 @@ package messagix
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/MickielAraya/messagix-plus/graphql"
+	"github.com/MickielAraya/messagix-plus/methods"
+	"github.com/MickielAraya/messagix-plus/socket"
+	"github.com/MickielAraya/messagix-plus/table"
+	"github.com/MickielAraya/messagix-plus/types"
 	"log"
-	"github.com/0xzer/messagix/graphql"
-	"github.com/0xzer/messagix/methods"
-	"github.com/0xzer/messagix/socket"
-	"github.com/0xzer/messagix/table"
-	"github.com/0xzer/messagix/types"
 )
 
 type SyncManager struct {
@@ -16,7 +16,7 @@ type SyncManager struct {
 	// for syncing / cursors
 	store map[int64]*socket.QueryMetadata
 	// for thread/message fetching
-	keyStore map[int64]*socket.KeyStoreData
+	keyStore   map[int64]*socket.KeyStoreData
 	syncParams *types.LSPlatformMessengerSyncParams
 }
 
@@ -24,24 +24,24 @@ func (c *Client) NewSyncManager() *SyncManager {
 	return &SyncManager{
 		client: c,
 		store: map[int64]*socket.QueryMetadata{
-			1: { SendSyncParams: false, SyncChannel: socket.MailBox },
-			2: { SendSyncParams: false, SyncChannel: socket.Contact },
-			5: { SendSyncParams: true },
-			16: { SendSyncParams: true },
-			26: { SendSyncParams: true },
-			28: { SendSyncParams: true },
-			95: { SendSyncParams: false, SyncChannel: socket.Contact },
-			104: { SendSyncParams: true },
-			140: { SendSyncParams: true },
-			141: { SendSyncParams: true },
-			142: { SendSyncParams: true },
-			143: { SendSyncParams: true },
-			196: { SendSyncParams: true },
-			198: { SendSyncParams: true },
+			1:   {SendSyncParams: false, SyncChannel: socket.MailBox},
+			2:   {SendSyncParams: false, SyncChannel: socket.Contact},
+			5:   {SendSyncParams: true},
+			16:  {SendSyncParams: true},
+			26:  {SendSyncParams: true},
+			28:  {SendSyncParams: true},
+			95:  {SendSyncParams: false, SyncChannel: socket.Contact},
+			104: {SendSyncParams: true},
+			140: {SendSyncParams: true},
+			141: {SendSyncParams: true},
+			142: {SendSyncParams: true},
+			143: {SendSyncParams: true},
+			196: {SendSyncParams: true},
+			198: {SendSyncParams: true},
 		},
 		keyStore: map[int64]*socket.KeyStoreData{
-			1: { MinThreadKey: 0, ParentThreadKey: -1, MinLastActivityTimestampMs: 9999999999999, HasMoreBefore: false },
-			95: { MinThreadKey: 0, ParentThreadKey: -1, MinLastActivityTimestampMs: 9999999999999, HasMoreBefore: false },
+			1:  {MinThreadKey: 0, ParentThreadKey: -1, MinLastActivityTimestampMs: 9999999999999, HasMoreBefore: false},
+			95: {MinThreadKey: 0, ParentThreadKey: -1, MinLastActivityTimestampMs: 9999999999999, HasMoreBefore: false},
 		},
 		syncParams: &types.LSPlatformMessengerSyncParams{},
 	}
@@ -68,8 +68,8 @@ func (sm *SyncManager) SyncSocketData(databaseId int64, db *socket.QueryMetadata
 	var t int
 	payload := &socket.DatabaseQuery{
 		Database: databaseId,
-		Version: sm.client.configs.VersionId,
-		EpochId: methods.GenerateEpochId(),
+		Version:  sm.client.configs.VersionId,
+		EpochId:  methods.GenerateEpochId(),
 	}
 
 	if db.SendSyncParams {
@@ -122,12 +122,12 @@ func (sm *SyncManager) SyncDataGraphQL(dbs []int64) (*table.LSTable, error) {
 		if !ok {
 			return nil, fmt.Errorf("could not find sync store for database: %d", db)
 		}
-		
+
 		variables := &graphql.LSPlatformGraphQLLightspeedVariables{
-			Database: int(db),
+			Database:          int(db),
 			LastAppliedCursor: database.LastAppliedCursor,
-			Version: sm.client.configs.VersionId,
-			EpochID: 0,
+			Version:           sm.client.configs.VersionId,
+			EpochID:           0,
 		}
 		if database.SendSyncParams {
 			variables.SyncParams = sm.getSyncParams(database.SyncChannel)
@@ -157,7 +157,7 @@ func (sm *SyncManager) SyncTransactions(transactions []table.LSExecuteFirstBlock
 		if !ok {
 			return fmt.Errorf("failed to update database %d by block transaction", transaction.DatabaseId)
 		}
-	
+
 		database.LastAppliedCursor = transaction.NextCursor
 		database.SendSyncParams = transaction.SendSyncParams
 		database.SyncChannel = socket.SyncChannel(transaction.SyncChannel)
@@ -232,8 +232,8 @@ func (sm *SyncManager) getSyncGroupKeyStore(db int64) *socket.KeyStoreData {
 }
 
 /*
-	these 3 return the same stuff
-	updateThreadsRangesV2, upsertInboxThreadsRange, upsertSyncGroupThreadsRange
+these 3 return the same stuff
+updateThreadsRangesV2, upsertInboxThreadsRange, upsertSyncGroupThreadsRange
 */
 func (sm *SyncManager) updateSyncGroupCursors(table table.LSTable) error {
 	var err error
@@ -247,6 +247,7 @@ func (sm *SyncManager) updateSyncGroupCursors(table table.LSTable) error {
 
 	return err
 }
+
 /*
 func (db *DatabaseManager) AddInitQueries() {
 	queries := []socket.DatabaseQuery{
@@ -264,7 +265,7 @@ func (db *DatabaseManager) AddInitQueries() {
 		{Database: 143},
 		{Database: 196},
 		{Database: 198},
-		
+
 	}
 }
 */

@@ -8,12 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/0xzer/messagix/graphql"
-	"github.com/0xzer/messagix/lightspeed"
-	"github.com/0xzer/messagix/methods"
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus/graphql"
+	"github.com/MickielAraya/messagix-plus/lightspeed"
+	"github.com/MickielAraya/messagix-plus/methods"
+	"github.com/MickielAraya/messagix-plus/types"
 )
-
 
 var GraphQLData = &graphql.GraphQLTable{}
 var VersionId int64
@@ -43,12 +42,11 @@ func (m *ModuleParser) HandleRawJSON(data []byte, id string) error {
 	return nil
 }
 
-
 func (m *ModuleParser) handleConfigData(configData []interface{}, reflectedMs reflect.Value) error {
 	if len(configData) < 4 {
 		return nil
 	}
-	
+
 	configName := configData[0].(string)
 	config := configData[2]
 	configId := int(configData[3].(float64))
@@ -78,60 +76,60 @@ func (m *ModuleParser) handleConfigData(configData []interface{}, reflectedMs re
 
 func (m *ModuleParser) handleRequire(modName string, data []interface{}) error {
 	switch modName {
-		case "ssjs":
-			//reflectedMs := reflect.ValueOf(&SchedulerJSRequired).Elem()
-			for _, requireData := range data {
-				d := requireData.([]interface{})
-				requireType := d[0].(string)
-				switch requireType {
-					case "CometPlatformRootClient":
-						moduleData := d[3].([]interface{})
-						for _, v := range moduleData {
-							requestsMap, ok := v.([]interface{})
-							if !ok {
+	case "ssjs":
+		//reflectedMs := reflect.ValueOf(&SchedulerJSRequired).Elem()
+		for _, requireData := range data {
+			d := requireData.([]interface{})
+			requireType := d[0].(string)
+			switch requireType {
+			case "CometPlatformRootClient":
+				moduleData := d[3].([]interface{})
+				for _, v := range moduleData {
+					requestsMap, ok := v.([]interface{})
+					if !ok {
+						continue
+					}
+					for _, req := range requestsMap {
+						var reqData *graphql.GraphQLPreloader
+						err := methods.InterfaceToStructJSON(req, &reqData)
+						if err != nil {
+							continue
+						}
+						if len(reqData.Variables.RequestPayload) > 0 {
+							var syncData *graphql.LSPlatformGraphQLLightspeedVariables
+							err = json.Unmarshal([]byte(reqData.Variables.RequestPayload), &syncData)
+							if err != nil {
 								continue
 							}
-							for _, req := range requestsMap {
-								var reqData *graphql.GraphQLPreloader
-								err := methods.InterfaceToStructJSON(req, &reqData)
-								if err != nil {
-									continue
-								}
-								if len(reqData.Variables.RequestPayload) > 0 {
-									var syncData *graphql.LSPlatformGraphQLLightspeedVariables
-									err = json.Unmarshal([]byte(reqData.Variables.RequestPayload), &syncData)
-									if err != nil {
-										continue
-									}
-									VersionId = syncData.Version
-								}
-							}
+							VersionId = syncData.Version
+						}
+					}
 
-						}
-					case "RelayPrefetchedStreamCache":
-						moduleData := d[3].([]interface{})
-						//method := d[1].(string)
-						//dependencies := d[2].(string)
-						parserFunc := m.parseGraphMethodName(moduleData[0].(string))
-						graphQLData := moduleData[1].(map[string]interface{})
-						boxData, ok := graphQLData["__bbox"].(map[string]interface{})
-						if !ok {
-							return fmt.Errorf("could not find __bbox in graphQLData map for parser func: %s", parserFunc)
-						}
+				}
+			case "RelayPrefetchedStreamCache":
+				moduleData := d[3].([]interface{})
+				//method := d[1].(string)
+				//dependencies := d[2].(string)
+				parserFunc := m.parseGraphMethodName(moduleData[0].(string))
+				graphQLData := moduleData[1].(map[string]interface{})
+				boxData, ok := graphQLData["__bbox"].(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("could not find __bbox in graphQLData map for parser func: %s", parserFunc)
+				}
 
-						result, ok := boxData["result"]
-						if !ok {
-							return fmt.Errorf("could not find result in __bbox for parser func: %s", parserFunc)
-						}
+				result, ok := boxData["result"]
+				if !ok {
+					return fmt.Errorf("could not find result in __bbox for parser func: %s", parserFunc)
+				}
 
-						if parserFunc == "LSPlatformGraphQLLightspeedRequestQuery" || parserFunc == "LSPlatformGraphQLLightspeedRequestForIGDQuery" {
-							m.handleLightSpeedQLRequest(result, parserFunc)
-						} else {
-							m.handleGraphQLData(parserFunc, result)
-						}
+				if parserFunc == "LSPlatformGraphQLLightspeedRequestQuery" || parserFunc == "LSPlatformGraphQLLightspeedRequestForIGDQuery" {
+					m.handleLightSpeedQLRequest(result, parserFunc)
+				} else {
+					m.handleGraphQLData(parserFunc, result)
 				}
 			}
 		}
+	}
 	return nil
 }
 
@@ -156,20 +154,20 @@ func (m *ModuleParser) handleLightSpeedQLRequest(data interface{}, parserFunc st
 		lsPayloadStr = lsData.Data.Viewer.LightspeedWebRequest.Payload
 		deps = lsData.Data.Viewer.LightspeedWebRequest.Dependencies
 	}
-	
+
 	if lsPayloadStr == "" { // skip cuz payload null
 		return nil
 	}
 
 	dependencies := lightspeed.DependenciesToMap(deps)
 	decoder := lightspeed.NewLightSpeedDecoder(dependencies, m.client.configs.accountConfigTable)
-	
+
 	var payload lightspeed.LightSpeedData
 	err := json.Unmarshal([]byte(lsPayloadStr), &payload)
 	if err != nil {
 		return fmt.Errorf("messagix-moduleparser: failed to marshal lsPayloadStr into LightSpeedData: %e", err)
 	}
-	
+
 	decoder.Decode(payload.Steps)
 	return nil
 }
@@ -181,7 +179,7 @@ func (m *ModuleParser) handleGraphQLData(name string, data interface{}) {
 		log.Println("Not handling GraphQLData for operation:", name)
 		return
 	}
-	
+
 	definition := dataField.Type().Elem()
 	newDefinition := reflect.New(definition).Interface()
 
@@ -225,18 +223,18 @@ func (m *ModuleParser) SSJSHandle(data interface{}) error {
 			continue
 		}
 		switch k {
-			case "__bbox":
-				boxMap := v.(map[string]interface{})
-				for boxKey, boxData := range boxMap {
-					boxDataArr := boxData.([]interface{})
-					switch boxKey {
-					case "require":
-						err = m.handleRequire("ssjs", boxDataArr)
-						continue
-					case "define":
-						err = m.handleDefine("ssjs", boxDataArr)
-					}
+		case "__bbox":
+			boxMap := v.(map[string]interface{})
+			for boxKey, boxData := range boxMap {
+				boxDataArr := boxData.([]interface{})
+				switch boxKey {
+				case "require":
+					err = m.handleRequire("ssjs", boxDataArr)
+					continue
+				case "define":
+					err = m.handleDefine("ssjs", boxDataArr)
 				}
+			}
 		}
 	}
 	return err
@@ -245,21 +243,21 @@ func (m *ModuleParser) SSJSHandle(data interface{}) error {
 func (m *ModuleParser) handleDefine(modName string, data []interface{}) error {
 	reflectedMs := reflect.ValueOf(m.client.configs.browserConfigTable).Elem()
 	switch modName {
-		case "ssjs":
-			for _, child := range data {
-				configData := child.([]interface{})
-				err := m.handleConfigData(configData, reflectedMs)
-				if err != nil {
-					return err
-				}
-			}
-		case "default_define":
-			err := m.handleConfigData(data, reflectedMs)
+	case "ssjs":
+		for _, child := range data {
+			configData := child.([]interface{})
+			err := m.handleConfigData(configData, reflectedMs)
 			if err != nil {
 				return err
 			}
 		}
-		return nil
+	case "default_define":
+		err := m.handleConfigData(data, reflectedMs)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (m *ModuleParser) Bootloader_HandlePayload(payload interface{}, bootloaderConfig *types.BootLoaderConfig) error {

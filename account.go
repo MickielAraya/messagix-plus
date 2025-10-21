@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/0xzer/messagix/cookies"
-	"github.com/0xzer/messagix/socket"
-	"github.com/0xzer/messagix/table"
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus/cookies"
+	"github.com/MickielAraya/messagix-plus/socket"
+	"github.com/MickielAraya/messagix-plus/table"
+	"github.com/MickielAraya/messagix-plus/types"
 	"github.com/google/uuid"
 
 	fhttp "github.com/bogdanfinn/fhttp"

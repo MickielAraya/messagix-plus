@@ -5,25 +5,25 @@ import (
 	"log"
 	"reflect"
 
-	"github.com/0xzer/messagix/crypto"
-	"github.com/0xzer/messagix/methods"
-	"github.com/0xzer/messagix/socket"
-	"github.com/0xzer/messagix/table"
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus/crypto"
+	"github.com/MickielAraya/messagix-plus/methods"
+	"github.com/MickielAraya/messagix-plus/socket"
+	"github.com/MickielAraya/messagix-plus/table"
+	"github.com/MickielAraya/messagix-plus/types"
 )
 
 type Configs struct {
-	client *Client
-	needSync bool
+	client             *Client
+	needSync           bool
 	browserConfigTable *types.SchedulerJSDefineConfig
 	accountConfigTable *table.LSTable
-	LsdToken string
-	CometReq string
-	VersionId int64
-	Jazoest string
-	WebSessionId string
-	Bitmap *crypto.Bitmap
-	CsrBitmap *crypto.Bitmap
+	LsdToken           string
+	CometReq           string
+	VersionId          int64
+	Jazoest            string
+	WebSessionId       string
+	Bitmap             *crypto.Bitmap
+	CsrBitmap          *crypto.Bitmap
 }
 
 func (c *Configs) SetupConfigs() error {
@@ -53,7 +53,7 @@ func (c *Configs) SetupConfigs() error {
 				return fmt.Errorf("failed to update sync params for databases: 1, 2, 95")
 			}
 
-			lsData, err := c.client.SyncManager.SyncDataGraphQL([]int64{1,2,95})
+			lsData, err := c.client.SyncManager.SyncDataGraphQL([]int64{1, 2, 95})
 			if err != nil {
 				return fmt.Errorf("failed to sync data via graphql for databases: 1, 2, 95")
 			}
@@ -78,7 +78,7 @@ func (c *Configs) SetupConfigs() error {
 		}
 		c.client.Logger.Info().Any("platform", c.client.platform).Msg("Configs loaded, but not yet logged in.")
 	}
-	
+
 	return nil
 }
 

@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/0xzer/messagix"
-	"github.com/0xzer/messagix/debug"
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus"
+	"github.com/MickielAraya/messagix-plus/debug"
+	"github.com/MickielAraya/messagix-plus/types"
 )
 
 func TestParseJS(t *testing.T) {

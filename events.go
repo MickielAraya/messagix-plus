@@ -2,13 +2,13 @@ package messagix
 
 import (
 	"encoding/json"
+	"github.com/MickielAraya/messagix-plus/lightspeed"
+	"github.com/MickielAraya/messagix-plus/methods"
+	"github.com/MickielAraya/messagix-plus/packets"
+	"github.com/MickielAraya/messagix-plus/socket"
+	"github.com/MickielAraya/messagix-plus/table"
+	"github.com/MickielAraya/messagix-plus/types"
 	"log"
-	"github.com/0xzer/messagix/lightspeed"
-	"github.com/0xzer/messagix/methods"
-	"github.com/0xzer/messagix/packets"
-	"github.com/0xzer/messagix/socket"
-	"github.com/0xzer/messagix/table"
-	"github.com/0xzer/messagix/types"
 )
 
 func (s *Socket) handleBinaryMessage(data []byte) {
@@ -64,45 +64,44 @@ func (s *Socket) handleReadyEvent(data *Event_Ready) {
 		log.Fatalf("failed to subscribe to ls_resp: %e", err)
 	}
 
-	
 	tskm := s.client.NewTaskManager()
 	tskm.AddNewTask(&socket.FetchThreadsTask{
-		IsAfter: 0,
-		ParentThreadKey: -1,
-		ReferenceThreadKey: 0,
+		IsAfter:                    0,
+		ParentThreadKey:            -1,
+		ReferenceThreadKey:         0,
 		ReferenceActivityTimestamp: 9999999999999,
-		AdditionalPagesToFetch: 0,
-		Cursor: s.client.SyncManager.GetCursor(1),
-		SyncGroup: 1,
+		AdditionalPagesToFetch:     0,
+		Cursor:                     s.client.SyncManager.GetCursor(1),
+		SyncGroup:                  1,
 	})
 	tskm.AddNewTask(&socket.FetchThreadsTask{
-		IsAfter: 0,
-		ParentThreadKey: -1,
-		ReferenceThreadKey: 0,
+		IsAfter:                    0,
+		ParentThreadKey:            -1,
+		ReferenceThreadKey:         0,
 		ReferenceActivityTimestamp: 9999999999999,
-		AdditionalPagesToFetch: 0,
-		SyncGroup: 95,
+		AdditionalPagesToFetch:     0,
+		SyncGroup:                  95,
 	})
 
 	syncGroupKeyStore1 := s.client.SyncManager.getSyncGroupKeyStore(1)
 	if syncGroupKeyStore1 != nil {
 		//  syncGroupKeyStore95 := s.client.SyncManager.getSyncGroupKeyStore(95)
 		tskm.AddNewTask(&socket.FetchThreadsTask{
-			IsAfter: 0,
-			ParentThreadKey: syncGroupKeyStore1.ParentThreadKey,
-			ReferenceThreadKey: syncGroupKeyStore1.MinThreadKey,
+			IsAfter:                    0,
+			ParentThreadKey:            syncGroupKeyStore1.ParentThreadKey,
+			ReferenceThreadKey:         syncGroupKeyStore1.MinThreadKey,
 			ReferenceActivityTimestamp: syncGroupKeyStore1.MinLastActivityTimestampMs,
-			AdditionalPagesToFetch: 0,
-			Cursor: s.client.SyncManager.GetCursor(1),
-			SyncGroup: 1,
+			AdditionalPagesToFetch:     0,
+			Cursor:                     s.client.SyncManager.GetCursor(1),
+			SyncGroup:                  1,
 		})
 		tskm.AddNewTask(&socket.FetchThreadsTask{
-			IsAfter: 0,
-			ParentThreadKey: syncGroupKeyStore1.ParentThreadKey,
-			ReferenceThreadKey: syncGroupKeyStore1.MinThreadKey,
+			IsAfter:                    0,
+			ParentThreadKey:            syncGroupKeyStore1.ParentThreadKey,
+			ReferenceThreadKey:         syncGroupKeyStore1.MinThreadKey,
 			ReferenceActivityTimestamp: syncGroupKeyStore1.MinLastActivityTimestampMs,
-			AdditionalPagesToFetch: 0,
-			SyncGroup: 95,
+			AdditionalPagesToFetch:     0,
+			SyncGroup:                  95,
 		})
 	}
 
@@ -129,7 +128,6 @@ func (s *Socket) handleReadyEvent(data *Event_Ready) {
 		log.Fatalf("failed to report app state to foreground (active): %e", err)
 	}
 
-	
 	err = s.client.SyncManager.EnsureSyncedSocket([]int64{
 		1,
 	})
@@ -162,56 +160,57 @@ func (s *Socket) handlePublishResponseEvent(resp *Event_PublishResponse) {
 	hasPacket := s.responseHandler.hasPacket(uint16(packetId))
 	// s.client.Logger.Debug().Any("packetId", packetId).Any("resp", resp).Msg("got response!")
 	switch resp.Topic {
-		case string(LS_RESP):
-			resp.Finish()
-			if hasPacket {
-				err := s.responseHandler.updateRequestChannel(uint16(packetId), resp)
-				if err != nil {
-					s.handleErrorEvent(err)
-					return
-				}
+	case string(LS_RESP):
+		resp.Finish()
+		if hasPacket {
+			err := s.responseHandler.updateRequestChannel(uint16(packetId), resp)
+			if err != nil {
+				s.handleErrorEvent(err)
 				return
-			} else if packetId == 0 {
-				syncGroupsNeedUpdate := methods.NeedUpdateSyncGroups(resp.Table)
-				if syncGroupsNeedUpdate {
-					s.client.Logger.Debug().
+			}
+			return
+		} else if packetId == 0 {
+			syncGroupsNeedUpdate := methods.NeedUpdateSyncGroups(resp.Table)
+			if syncGroupsNeedUpdate {
+				s.client.Logger.Debug().
 					Any("LSExecuteFirstBlockForSyncTransaction", resp.Table.LSExecuteFirstBlockForSyncTransaction).
 					Any("LSUpsertSyncGroupThreadsRange", resp.Table.LSUpsertSyncGroupThreadsRange).
 					Msg("Updating sync groups")
-					//err := s.client.SyncManager.SyncTransactions(transactions)
-					err := s.client.SyncManager.updateSyncGroupCursors(resp.Table)
-					if err != nil {
-						s.client.Logger.Err(err).Msg("Failed to sync transactions from publish response event")
-					}
+				//err := s.client.SyncManager.SyncTransactions(transactions)
+				err := s.client.SyncManager.updateSyncGroupCursors(resp.Table)
+				if err != nil {
+					s.client.Logger.Err(err).Msg("Failed to sync transactions from publish response event")
 				}
-				s.client.eventHandler(resp)
-				return
 			}
-			// s.client.Logger.Info().Any("packetId", packetId).Any("data", resp).Msg("Got publish response but was not expecting it for specific packet identifier.")
-		default:
-			s.client.Logger.Info().Any("packetId", packetId).Any("topic", resp.Topic).Any("data", resp.Data).Msg("Got unknown publish response topic!")
+			s.client.eventHandler(resp)
+			return
+		}
+		// s.client.Logger.Info().Any("packetId", packetId).Any("data", resp).Msg("Got publish response but was not expecting it for specific packet identifier.")
+	default:
+		s.client.Logger.Info().Any("packetId", packetId).Any("topic", resp.Topic).Any("data", resp.Data).Msg("Got unknown publish response topic!")
 	}
 }
 
-type Event_PingResp struct {}
+type Event_PingResp struct{}
+
 func (pr *Event_PingResp) SetIdentifier(identifier int16) {}
-func (e *Event_PingResp) Finish() ResponseData {return e}
+func (e *Event_PingResp) Finish() ResponseData            { return e }
+
 // Event_Ready represents the CONNACK packet's response.
 //
 // The library provides the raw parsed data, so handle connection codes as needed for your application.
 type Event_Ready struct {
-	client *Client
+	client         *Client
 	IsNewSession   bool
 	ConnectionCode ConnectionCode
-	CurrentUser types.AccountInfo `skip:"1"`
-	Table *table.LSTable
+	CurrentUser    types.AccountInfo `skip:"1"`
+	Table          *table.LSTable
 	//Threads []table.LSDeleteThenInsertThread `skip:"1"`
 	//Messages []table.LSUpsertMessage `skip:"1"`
 	//Contacts []table.LSVerifyContactRowExists `skip:"1"`
 }
 
 func (pb *Event_Ready) SetIdentifier(identifier int16) {}
-
 
 func (e *Event_Ready) Finish() ResponseData {
 	if e.client.platform == types.Facebook {
@@ -253,7 +252,7 @@ func (e *Event_SocketClosed) Finish() ResponseData {
 	return e
 }
 
-type AckEvent interface{
+type AckEvent interface {
 	GetPacketId() uint16
 }
 
@@ -292,17 +291,17 @@ func (pb *Event_SubscribeACK) Finish() ResponseData {
 //
 // It will also be used for handling the responses after calling a function like GetContacts through the requestId
 type Event_PublishResponse struct {
-	Topic string `lengthType:"uint16" endian:"big"`
-	Data PublishResponseData `jsonString:"1"`
-	Table table.LSTable
+	Topic             string              `lengthType:"uint16" endian:"big"`
+	Data              PublishResponseData `jsonString:"1"`
+	Table             table.LSTable
 	MessageIdentifier int16
 }
 
 type PublishResponseData struct {
-	RequestID int64 `json:"request_id,omitempty"`
-	Payload   string `json:"payload,omitempty"`
-	Sp     []string `json:"sp,omitempty"` // dependencies
-	Target int      `json:"target,omitempty"`
+	RequestID int64    `json:"request_id,omitempty"`
+	Payload   string   `json:"payload,omitempty"`
+	Sp        []string `json:"sp,omitempty"` // dependencies
+	Target    int      `json:"target,omitempty"`
 }
 
 func (pb *Event_PublishResponse) SetIdentifier(identifier int16) {

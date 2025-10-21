@@ -1,6 +1,6 @@
 package socket
 
-import "github.com/0xzer/messagix/methods"
+import "github.com/MickielAraya/messagix-plus/methods"
 
 type GetContactsTask struct {
 	Limit int64 `json:"limit,omitempty"`

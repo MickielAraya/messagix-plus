@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/0xzer/messagix/cookies"
-	"github.com/0xzer/messagix/crypto"
-	"github.com/0xzer/messagix/types"
+	"github.com/MickielAraya/messagix-plus/cookies"
+	"github.com/MickielAraya/messagix-plus/crypto"
+	"github.com/MickielAraya/messagix-plus/types"
 	"github.com/google/go-querystring/query"
 )
 
