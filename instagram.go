@@ -56,7 +56,7 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 	utils.Log.Info("Successfully fetched login page v1")
 
 	utils.Log.Info("Sending cookie consent")
-	err = ig.client.sendCookieConsent()
+	err = ig.client.sendCookieConsent("")
 	if err != nil {
 		utils.Log.Error("Failed at sendCookieConsent: %v", err)
 		return nil, err
