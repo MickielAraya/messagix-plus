@@ -165,6 +165,7 @@ func (m *ModuleParser) Load(page string) error {
 
 	if m.client.platform == types.Instagram {
 		sharedData := m.client.configs.browserConfigTable.XIGSharedData
+		fmt.Println("sharedData", sharedData)
 		err = sharedData.ParseRaw()
 		if err != nil {
 			return fmt.Errorf("messagix-moduleparser: failed to parse XIGSharedData raw string into *types.XIGConfigData (%e)", err)
