@@ -72,10 +72,8 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 		utils.Log.Error("Failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %v", err)
 		return nil, fmt.Errorf("failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %w", err)
 	}
-	utils.Log.Info("Successfully unmarshaled XIGSharedData.ConfigData")
 
 	encryptionConfig := ig.client.configs.browserConfigTable.XIGSharedData.ConfigData.Encryption
-	utils.Log.Info("Converting encryptionConfig.KeyID to int for password encryption")
 	pubKeyId, err := strconv.Atoi(encryptionConfig.KeyID)
 	if err != nil {
 		utils.Log.Error("Failed to convert keyId for instagram password encryption to int: %v", err)
