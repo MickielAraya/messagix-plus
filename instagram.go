@@ -27,53 +27,44 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 	ig.client.Account.Password = password
 	ig.client.Account.TotpSecret = totpSecret
 
-	utils.Log.Info("Loading login page")
+	utils.Log.Warn("Loading login page...")
 	ig.client.loadLoginPage()
-	utils.Log.Info("Setting up configs")
 	if err := ig.client.configs.SetupConfigs(); err != nil {
 		utils.Log.Error("Failed to setup configs: %v", err)
 		return nil, err
 	}
 
 	h := ig.client.buildHeaders(false)
-	utils.Log.Info("Headers built for login")
-
-	// Add Instagram-specific login headers
 	h.Add("x-web-device-id", ig.client.cookies.GetValue("ig_did"))
 	h.Add("sec-fetch-dest", "empty")
 	h.Add("sec-fetch-mode", "cors")
 	h.Add("sec-fetch-site", "same-origin")
 	h.Add("x-requested-with", "XMLHttpRequest")
 	h.Add("referer", ig.client.getEndpoint("login_page"))
-	utils.Log.Info("Attached additional Instagram headers")
 
 	login_page_v1 := ig.client.getEndpoint("web_login_page_v1")
-	utils.Log.Info("Making GET request to login page v1: %s", login_page_v1)
 	_, _, err := ig.client.MakeRequest(login_page_v1, "GET", h, nil, types.NONE)
 	if err != nil {
 		utils.Log.Error("Failed to fetch %s for instagram login: %v", login_page_v1, err)
 		return nil, fmt.Errorf("failed to fetch %s for instagram login: %w", login_page_v1, err)
 	}
-	utils.Log.Info("Successfully fetched login page v1")
+	utils.Log.Success("Successfully fetched login page!")
 
-	utils.Log.Info("Sending cookie consent")
+	utils.Log.Warn("Sending cookie consent...")
 	err = ig.client.sendCookieConsent("")
 	if err != nil {
 		utils.Log.Error("Failed at sendCookieConsent: %v", err)
 		return nil, err
 	}
-	utils.Log.Info("Cookie consent sent")
+	utils.Log.Success("Cookie consent sent!")
 
 	web_shared_data_v1 := ig.client.getEndpoint("web_shared_data_v1")
-	utils.Log.Info("Making GET request to web shared data v1: %s", web_shared_data_v1)
 	req, respBody, err := ig.client.MakeRequest(web_shared_data_v1, "GET", h, nil, types.NONE) // returns actual machineId you're supposed to use
 	if err != nil {
 		utils.Log.Error("Failed to fetch %s for instagram login: %v", web_shared_data_v1, err)
 		return nil, fmt.Errorf("failed to fetch %s for instagram login: %w", web_shared_data_v1, err)
 	}
-	utils.Log.Info("Successfully fetched web shared data v1")
 
-	utils.Log.Info("Updating cookies from response headers")
 	cookies.UpdateFromResponse(ig.client.cookies, req.Header)
 
 	err = json.Unmarshal(respBody, &ig.client.configs.browserConfigTable.XIGSharedData.ConfigData)
@@ -90,15 +81,12 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 		utils.Log.Error("Failed to convert keyId for instagram password encryption to int: %v", err)
 		return nil, fmt.Errorf("failed to convert keyId for instagram password encryption to int: %w", err)
 	}
-	utils.Log.Info("Successfully converted keyId: %v", pubKeyId)
 
-	utils.Log.Info("Encrypting Instagram password")
 	encryptedPw, err := crypto.EncryptPassword(int(types.Instagram), pubKeyId, encryptionConfig.PublicKey, password)
 	if err != nil {
 		utils.Log.Error("Failed to encrypt password for instagram: %v", err)
 		return nil, fmt.Errorf("failed to encrypt password for instagram: %w", err)
 	}
-	utils.Log.Info("Password encrypted")
 
 	loginForm := &types.InstagramLoginPayload{
 		Password:             encryptedPw,
@@ -108,21 +96,19 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 		Username:             identifier,
 	}
 
-	utils.Log.Info("Encoding login payload into URL values form")
 	form, err := query.Values(&loginForm)
 	if err != nil {
 		utils.Log.Error("Failed to encode login form payload: %v", err)
 		return nil, fmt.Errorf("failed to encode login form payload: %w", err)
 	}
-	utils.Log.Info("Login form encoded")
 
 	web_login_ajax_v1 := ig.client.getEndpoint("web_login_ajax_v1")
-	utils.Log.Info("Sending login request to %s", web_login_ajax_v1)
 	loginResp, loginBody, err := ig.client.Account.sendLoginRequest(form, web_login_ajax_v1)
 	if err != nil {
 		utils.Log.Error("Failed to send login request to %s: %v", web_login_ajax_v1, err)
 		return nil, err
 	}
+
 	utils.Log.Info("Login request sent successfully, processing login result")
 
 	loginResult := ig.client.Account.processLogin(loginResp, loginBody)
