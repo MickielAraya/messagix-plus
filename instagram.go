@@ -22,15 +22,12 @@ type InstagramMethods struct {
 }
 
 func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cookies.Cookies, error) {
-	utils.Log.Info("Starting Instagram login for user: %s", identifier)
 	ig.client.Account.Username = identifier
 	ig.client.Account.Password = password
 	ig.client.Account.TotpSecret = totpSecret
 
-	utils.Log.Warn("Loading login page...")
 	ig.client.loadLoginPage()
 	if err := ig.client.configs.SetupConfigs(); err != nil {
-		utils.Log.Error("Failed to setup configs: %v", err)
 		return nil, err
 	}
 
@@ -45,23 +42,17 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 	login_page_v1 := ig.client.getEndpoint("web_login_page_v1")
 	_, _, err := ig.client.MakeRequest(login_page_v1, "GET", h, nil, types.NONE)
 	if err != nil {
-		utils.Log.Error("Failed to fetch %s for instagram login: %v", login_page_v1, err)
 		return nil, fmt.Errorf("failed to fetch %s for instagram login: %w", login_page_v1, err)
 	}
-	utils.Log.Success("Successfully fetched login page!")
 
-	utils.Log.Warn("Sending cookie consent...")
 	err = ig.client.sendCookieConsent("")
 	if err != nil {
-		utils.Log.Error("Failed at sendCookieConsent: %v", err)
 		return nil, err
 	}
-	utils.Log.Success("Cookie consent sent!")
 
 	web_shared_data_v1 := ig.client.getEndpoint("web_shared_data_v1")
 	req, respBody, err := ig.client.MakeRequest(web_shared_data_v1, "GET", h, nil, types.NONE) // returns actual machineId you're supposed to use
 	if err != nil {
-		utils.Log.Error("Failed to fetch %s for instagram login: %v", web_shared_data_v1, err)
 		return nil, fmt.Errorf("failed to fetch %s for instagram login: %w", web_shared_data_v1, err)
 	}
 
@@ -69,20 +60,17 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 
 	err = json.Unmarshal(respBody, &ig.client.configs.browserConfigTable.XIGSharedData.ConfigData)
 	if err != nil {
-		utils.Log.Error("Failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %v", err)
 		return nil, fmt.Errorf("failed to marshal web_shared_data_v1 resp body into *XIGSharedData.ConfigData: %w", err)
 	}
 
 	encryptionConfig := ig.client.configs.browserConfigTable.XIGSharedData.ConfigData.Encryption
 	pubKeyId, err := strconv.Atoi(encryptionConfig.KeyID)
 	if err != nil {
-		utils.Log.Error("Failed to convert keyId for instagram password encryption to int: %v", err)
 		return nil, fmt.Errorf("failed to convert keyId for instagram password encryption to int: %w", err)
 	}
 
 	encryptedPw, err := crypto.EncryptPassword(int(types.Instagram), pubKeyId, encryptionConfig.PublicKey, password)
 	if err != nil {
-		utils.Log.Error("Failed to encrypt password for instagram: %v", err)
 		return nil, fmt.Errorf("failed to encrypt password for instagram: %w", err)
 	}
 
@@ -96,26 +84,20 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 
 	form, err := query.Values(&loginForm)
 	if err != nil {
-		utils.Log.Error("Failed to encode login form payload: %v", err)
 		return nil, fmt.Errorf("failed to encode login form payload: %w", err)
 	}
 
 	web_login_ajax_v1 := ig.client.getEndpoint("web_login_ajax_v1")
 	loginResp, loginBody, err := ig.client.Account.sendLoginRequest(form, web_login_ajax_v1)
 	if err != nil {
-		utils.Log.Error("Failed to send login request to %s: %v", web_login_ajax_v1, err)
 		return nil, err
 	}
 
-	utils.Log.Info("Login request sent successfully, processing login result")
-
 	loginResult := ig.client.Account.processLogin(loginResp, loginBody)
 	if loginResult != nil {
-		utils.Log.Error("processLogin failed: %v", loginResult)
 		return nil, loginResult
 	}
 
-	utils.Log.Success("Instagram login process completed successfully for user: %s", identifier)
 	return ig.client.cookies, nil
 }
 

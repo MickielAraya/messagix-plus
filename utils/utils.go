@@ -9,8 +9,6 @@ import (
 )
 
 func GenerateTotpCode(secret string) (string, error) {
-	Log.Info("Generating TOTP code for secret: %s", secret)
-
 	secret = strings.ReplaceAll(secret, " ", "")
 	secret = strings.TrimSpace(secret)
 	secretTime := time.Now()
