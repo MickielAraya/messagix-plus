@@ -14,6 +14,7 @@ import (
 )
 
 func (s *Socket) handleBinaryMessage(data []byte) {
+	// TODO: maybe uncomment this?
 	//s.client.Logger.Debug().Any("hex-data", debug.BeautifyHex(data)).Bytes("bytes", data).Msg("Received BinaryMessage")
 	if s.client.eventHandler == nil {
 		return
@@ -155,6 +156,11 @@ func (s *Socket) handleACKEvent(ackData AckEvent) {
 // TODO: debug why this fails and panics due to nil
 // most likely becuase we don't close the socket so find out how to close the socket after message is sent
 func (s *Socket) handleErrorEvent(err error) {
+	if s.handshakeInterval != nil {
+		s.handshakeInterval.Stop()
+	}
+	s.conn = nil
+
 	errEvent := &Event_Error{Err: err}
 
 	utils.Log.Error("Does s.client exist? %v", s.client != nil)
