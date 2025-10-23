@@ -151,6 +151,8 @@ func (s *Socket) handleACKEvent(ackData AckEvent) {
 	}
 }
 
+// TODO: debug why this fails and panics due to nil
+// most likely becuase we don't close the socket so find out how to close the socket after message is sent
 func (s *Socket) handleErrorEvent(err error) {
 	errEvent := &Event_Error{Err: err}
 	s.client.eventHandler(errEvent)
