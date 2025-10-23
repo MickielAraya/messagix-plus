@@ -164,7 +164,10 @@ func (m *MessageBuilder) Execute() (*table.LSTable, error) {
 	if resp == nil {
 		return nil, fmt.Errorf("failed to receive response from socket after sending SendMessageTask. packetId: %d", packetId)
 	}
-	resp.Finish()
+
+	// TODO: debug why this fails with accounts that have reachability issues
+	// i.e This account can't receive your message because they don't allow new message requests from everyone.
+	// resp.Finish()
 
 	return &resp.Table, nil
 }
