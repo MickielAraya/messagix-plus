@@ -10,7 +10,6 @@ import (
 	socket "github.com/MickielAraya/messagix-plus/socket"
 	table "github.com/MickielAraya/messagix-plus/table"
 	types "github.com/MickielAraya/messagix-plus/types"
-	"github.com/MickielAraya/messagix-plus/utils"
 )
 
 func (s *Socket) handleBinaryMessage(data []byte) {
@@ -36,7 +35,9 @@ func (s *Socket) handleBinaryMessage(data []byte) {
 			s.handleReadyEvent(evt)
 		default:
 			s.client.Logger.Info().Any("data", data).Msg("sending default event...")
-			s.client.eventHandler(resp.ResponseData.Finish())
+			if s.client.eventHandler != nil {
+				s.client.eventHandler(resp.ResponseData.Finish())
+			}
 		}
 	}
 }
@@ -140,7 +141,9 @@ func (s *Socket) handleReadyEvent(data *Event_Ready) {
 	}
 
 	data.client = s.client
-	s.client.eventHandler(data.Finish())
+	if s.client.eventHandler != nil {
+		s.client.eventHandler(data.Finish())
+	}
 	go s.startHandshakeInterval()
 }
 
@@ -153,20 +156,12 @@ func (s *Socket) handleACKEvent(ackData AckEvent) {
 	}
 }
 
-// TODO: debug why this fails and panics due to nil
-// most likely becuase we don't close the socket so find out how to close the socket after message is sent
+// Fixed: Added nil check for eventHandler to prevent panic when eventHandler is not set
 func (s *Socket) handleErrorEvent(err error) {
-	if s.handshakeInterval != nil {
-		s.handshakeInterval.Stop()
-	}
-	s.conn = nil
-
 	errEvent := &Event_Error{Err: err}
-
-	utils.Log.Error("Does s.client exist? %v", s.client != nil)
-	utils.Log.Error("Failed to handle error event: %v", err)
-
-	s.client.eventHandler(errEvent)
+	if s.client.eventHandler != nil {
+		s.client.eventHandler(errEvent)
+	}
 }
 
 func (s *Socket) handlePublishResponseEvent(resp *Event_PublishResponse) {
@@ -196,7 +191,9 @@ func (s *Socket) handlePublishResponseEvent(resp *Event_PublishResponse) {
 					s.client.Logger.Err(err).Msg("Failed to sync transactions from publish response event")
 				}
 			}
-			s.client.eventHandler(resp)
+			if s.client.eventHandler != nil {
+				s.client.eventHandler(resp)
+			}
 			return
 		}
 		// s.client.Logger.Info().Any("packetId", packetId).Any("data", resp).Msg("Got publish response but was not expecting it for specific packet identifier.")
