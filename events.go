@@ -10,6 +10,7 @@ import (
 	socket "github.com/MickielAraya/messagix-plus/socket"
 	table "github.com/MickielAraya/messagix-plus/table"
 	types "github.com/MickielAraya/messagix-plus/types"
+	"github.com/MickielAraya/messagix-plus/utils"
 )
 
 func (s *Socket) handleBinaryMessage(data []byte) {
@@ -155,6 +156,10 @@ func (s *Socket) handleACKEvent(ackData AckEvent) {
 // most likely becuase we don't close the socket so find out how to close the socket after message is sent
 func (s *Socket) handleErrorEvent(err error) {
 	errEvent := &Event_Error{Err: err}
+
+	utils.Log.Error("Does s.client exist? %v", s.client != nil)
+	utils.Log.Error("Failed to handle error event: %v", err)
+
 	s.client.eventHandler(errEvent)
 }
 
