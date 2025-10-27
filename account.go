@@ -6,42 +6,49 @@ import (
 	"log"
 	"net/http"
 
-	cookies "github.com/MickielAraya/messagix-plus/cookies"
-	socket "github.com/MickielAraya/messagix-plus/socket"
-	table "github.com/MickielAraya/messagix-plus/table"
-	types "github.com/MickielAraya/messagix-plus/types"
+	"github.com/MickielAraya/messagix-plus/cookies"
+	"github.com/MickielAraya/messagix-plus/socket"
+	"github.com/MickielAraya/messagix-plus/table"
+	"github.com/MickielAraya/messagix-plus/types"
+
 	"github.com/google/uuid"
 )
 
 type Account struct {
-	client *Client
-
+	client     *Client
 	Username   string
 	Password   string
 	TotpSecret string
 }
 
-func (a *Account) processLogin(resp *http.Response, respBody []byte) error {
+func (a *Account) processLogin(ig *InstagramMethods, resp *http.Response, respBody []byte) error {
 	statusCode := resp.StatusCode
 	var err error
 	switch a.client.platform {
-	case types.Facebook:
-		if hasUserCookie := a.client.findCookie(resp.Cookies(), "c_user"); hasUserCookie == nil {
-			err = fmt.Errorf("failed to login to facebook")
-		}
 	case types.Instagram:
-		var loginResp *types.InstagramLoginResponse
+		var loginResp types.InstagramLoginResponse
 		err = json.Unmarshal(respBody, &loginResp)
 		if err != nil {
-			return fmt.Errorf("failed to unmarshal instagram login response to *types.InstagramLoginResponse (statusCode=%d): %e", statusCode, err)
+			return fmt.Errorf("failed to unmarshal instagram login response to *types.InstagramLoginResponse (statusCode=%d): %w", statusCode, err)
 		}
+
 		if loginResp.Status == "fail" {
+			if loginResp.TwoFactorRequired {
+				if loginResp.TwoFactorInfo == nil || !loginResp.TwoFactorInfo.TotpTwoFactorOn {
+					return fmt.Errorf("two factor required but TOTP is not enabled for this account")
+				}
+
+				err = ig.TwoFactorLogin(a.Username, loginResp.TwoFactorInfo.TwoFactorIdentifier, a.TotpSecret)
+				if err == nil {
+					break
+				}
+			}
 			err = fmt.Errorf("failed to process login request (message=%s, statusText=%s, statusCode=%d)", loginResp.Message, loginResp.Status, statusCode)
 		} else if !loginResp.Authenticated {
 			err = fmt.Errorf("failed to login, invalid password (userExists=%t, statusText=%s, statusCode=%d)", loginResp.User, loginResp.Status, statusCode)
-		} else {
-			a.client.cookies.(*cookies.InstagramCookies).IgWWWClaim = resp.Header.Get("x-ig-set-www-claim")
 		}
+
+		a.client.cookies.(*cookies.InstagramCookies).IgWWWClaim = resp.Header.Get("x-ig-set-www-claim")
 	}
 
 	if err == nil {

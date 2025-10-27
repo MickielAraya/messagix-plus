@@ -93,7 +93,7 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 		return nil, err
 	}
 
-	loginResult := ig.client.Account.processLogin(loginResp, loginBody)
+	loginResult := ig.client.Account.processLogin(ig, loginResp, loginBody)
 	if loginResult != nil {
 		return nil, loginResult
 	}
@@ -187,6 +187,7 @@ func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret stri
 		}
 		return fmt.Errorf("2FA login failed, generic failure")
 	}
+
 	if !loginResp.Authenticated {
 		return fmt.Errorf("2FA login failed: not authenticated")
 	}
