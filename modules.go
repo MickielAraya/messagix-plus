@@ -176,7 +176,7 @@ func (m *ModuleParser) handleGraphQLData(name string, data interface{}) {
 	reflectedMs := reflect.ValueOf(GraphQLData).Elem()
 	dataField := reflectedMs.FieldByName(name)
 	if !dataField.IsValid() {
-		log.Println("Not handling GraphQLData for operation:", name)
+		// log.Println("Not handling GraphQLData for operation:", name)
 		return
 	}
 

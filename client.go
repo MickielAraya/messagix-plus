@@ -192,7 +192,6 @@ func (c *Client) IsConnected() bool {
 }
 
 func (c *Client) sendCookieConsent(jsDatr string) error {
-
 	var payloadQuery interface{}
 	h := c.buildHeaders(false)
 	h.Add("sec-fetch-dest", "empty")

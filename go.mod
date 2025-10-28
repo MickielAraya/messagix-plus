@@ -3,7 +3,6 @@ module github.com/MickielAraya/messagix-plus
 go 1.20
 
 require (
-	github.com/fatih/color v1.18.0
 	github.com/google/go-querystring v1.1.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/mattn/go-colorable v0.1.13

@@ -1,7 +1,6 @@
 package lightspeed
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -11,8 +10,8 @@ import (
 )
 
 type LightSpeedDecoder struct {
-	Table interface{} // struct that contains pointers to all the dependencies/stores
-	Dependencies map[string]string
+	Table               interface{} // struct that contains pointers to all the dependencies/stores
+	Dependencies        map[string]string
 	StatementReferences map[int]interface{}
 }
 
@@ -21,8 +20,8 @@ func NewLightSpeedDecoder(dependencies map[string]string, table interface{}) *Li
 		return nil
 	}
 	return &LightSpeedDecoder{
-		Table:              table,
-		Dependencies:       dependencies,
+		Table:               table,
+		Dependencies:        dependencies,
 		StatementReferences: make(map[int]interface{}),
 	}
 }
@@ -33,7 +32,7 @@ func (ls *LightSpeedDecoder) Decode(data interface{}) interface{} {
 	if !ok {
 		return data
 	}
-	
+
 	stepType := StepType(int(s[0].(float64)))
 	stepData := s[1:]
 	switch stepType {
@@ -48,7 +47,7 @@ func (ls *LightSpeedDecoder) Decode(data interface{}) interface{} {
 			log.Println("[LOAD] failed to store key to float64")
 			return 0
 		}
-		
+
 		shouldLoad, ok := ls.StatementReferences[int(key)]
 		if !ok {
 			log.Println("[LOAD] failed to fetch statement reference for key:", key)
@@ -133,16 +132,16 @@ func (ls *LightSpeedDecoder) Decode(data interface{}) interface{} {
 func (ls *LightSpeedDecoder) handleStoredProcedure(referenceName string, data []interface{}) {
 	depReference, ok := ls.Dependencies[referenceName]
 	if !ok {
-		log.Println("Skipping dependency with reference name:",referenceName, data)
+		// log.Println("Skipping dependency with reference name:",referenceName, data)
 		return
 	}
 
 	reflectedMs := reflect.ValueOf(ls.Table).Elem()
 	//log.Println(depReference)
 	depField := reflectedMs.FieldByName(depReference)
-	
+
 	if !depField.IsValid() {
-		log.Println("Skipping dependency with reference name:",referenceName, data)
+		// log.Println("Skipping dependency with reference name:",referenceName, data)
 		return
 	}
 
@@ -159,15 +158,15 @@ func (ls *LightSpeedDecoder) handleStoredProcedure(referenceName string, data []
 			conditionVal := newDepInstance.FieldByName(conditionField)
 			index, err = ls.parseConditionIndex(conditionVal.Bool(), indexChoices)
 			if err != nil {
-				log.Println(fmt.Sprintf("failed to parse condition index in dependency %v for field %v", depFieldsType.Name(), fieldInfo.Name))
+				// log.Println(fmt.Sprintf("failed to parse condition index in dependency %v for field %v", depFieldsType.Name(), fieldInfo.Name))
 				continue
 			}
 		} else {
 			index, _ = strconv.Atoi(fieldInfo.Tag.Get("index"))
 		}
-		
+
 		if index > len(data)-1 {
-			log.Println(fmt.Sprintf("breaking handleStoredProcedure loop because the defined struct exceeds the length of the lightspeed data slice: (index=%d, sliceLen=%d, field=%s, dependency=%s)", index, len(data)-1, fieldInfo.Name, depFieldsType.Name()))
+			// log.Println(fmt.Sprintf("breaking handleStoredProcedure loop because the defined struct exceeds the length of the lightspeed data slice: (index=%d, sliceLen=%d, field=%s, dependency=%s)", index, len(data)-1, fieldInfo.Name, depFieldsType.Name()))
 			break
 		}
 
@@ -182,14 +181,14 @@ func (ls *LightSpeedDecoder) handleStoredProcedure(referenceName string, data []
 		case reflect.Int64:
 			i64, ok := val.(int64)
 			if !ok {
-				log.Println(fmt.Sprintf("failed to set int64 to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
+				// log.Println(fmt.Sprintf("failed to set int64 to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
 				continue
 			}
 			newDepInstance.Field(i).SetInt(i64)
 		case reflect.String:
 			str, ok := val.(string)
 			if !ok {
-				log.Println(fmt.Sprintf("failed to set string to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
+				// log.Println(fmt.Sprintf("failed to set string to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
 				continue
 			}
 			newDepInstance.Field(i).SetString(str)
@@ -202,21 +201,21 @@ func (ls *LightSpeedDecoder) handleStoredProcedure(referenceName string, data []
 		case reflect.Bool:
 			boolean, ok := val.(bool)
 			if !ok {
-				log.Println(fmt.Sprintf("failed to set bool to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
+				// log.Println(fmt.Sprintf("failed to set bool to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
 				continue
 			}
 			newDepInstance.Field(i).SetBool(boolean)
 		case reflect.Int:
 			integer, ok := val.(int)
 			if !ok {
-				log.Println(fmt.Sprintf("failed to set int to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
+				// log.Println(fmt.Sprintf("failed to set int to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
 				continue
 			}
 			newDepInstance.Field(i).SetInt(int64(integer))
 		case reflect.Float64:
 			floatVal, ok := val.(float64)
 			if !ok {
-				log.Println(fmt.Sprintf("failed to set float64 to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
+				// log.Println(fmt.Sprintf("failed to set float64 to %v in dependency %v for field %v (index=%d, actualType=%v)", val, depFieldsType.Name(), fieldInfo.Name, index, valType))
 				continue
 			}
 			newDepInstance.Field(i).SetFloat(floatVal)
