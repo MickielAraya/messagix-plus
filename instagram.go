@@ -265,8 +265,6 @@ func (ig *InstagramMethods) FetchReel(reelIds []string) (*responses.ReelInfoResp
 	return reelInfo, nil
 }
 
-// # NOTE:
-//
 // Hightlight IDs are different, they come in the format: "highlight:17913397615055292"
 func (ig *InstagramMethods) FetchHighlights(highlightIds []string) (*responses.ReelInfoResponse, error) {
 	return ig.FetchReel(highlightIds)
