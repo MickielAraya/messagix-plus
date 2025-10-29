@@ -5,8 +5,8 @@ import (
 
 	messagixplus "github.com/MickielAraya/messagix-plus"
 	cookies "github.com/MickielAraya/messagix-plus/cookies"
+	"github.com/MickielAraya/messagix-plus/debug"
 	"github.com/MickielAraya/messagix-plus/types"
-	"github.com/rs/zerolog"
 )
 
 func TestSendMessage(t *testing.T) {
@@ -21,7 +21,7 @@ func TestSendMessage(t *testing.T) {
 		t.Fatalf("failed to create instagram cookies: %v", err)
 	}
 
-	cli, err := messagixplus.NewClient(types.Instagram, &session, zerolog.Logger{}, "")
+	cli, err := messagixplus.NewClient(types.Instagram, &session, debug.NewLogger(), "")
 	if err != nil {
 		t.Fatalf("failed to create messagix client: %v", err)
 	}
