@@ -11,6 +11,7 @@ var InstagramEndpoints = map[string]string{
 	"host":            instaHost,
 	"base_url":        instaBaseUrl, //+ "/",
 	"login_page":      instaBaseUrl + "/accounts/login/",
+	"thread_messages": instaBaseUrl + "/direct/t/",
 	"messages":        instaBaseUrl + "/direct/inbox/",
 	"graphql":         instaBaseUrl + "/api/graphql",
 	"cookie_consent":  "https://graphql.instagram.com/graphql/",
