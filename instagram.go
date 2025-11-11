@@ -81,8 +81,6 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string, attem
 		return nil, fmt.Errorf("failed to encrypt password for instagram: %w", err)
 	}
 
-	fmt.Println("WE HAVE JAZEOST? -> ", ig.client.configs.Jazoest)
-
 	loginForm := &types.InstagramLoginPayload{
 		EncPassword:                 encryptedPw,
 		CaaF2DebugGroup:             "0",

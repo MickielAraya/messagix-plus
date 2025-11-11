@@ -110,18 +110,17 @@ func (c *Client) MakeRequest(url string, method string, headers http.Header, pay
 }
 
 func (c *Client) buildHeaders(withCookies bool) http.Header {
-
 	headers := http.Header{}
 	headers.Add("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
 	headers.Add("accept-language", "en-US,en;q=0.9")
 	headers.Add("dpr", "1.125")
 	headers.Add("sec-ch-prefers-color-scheme", "light")
-	headers.Add("sec-ch-ua", "\"Google Chrome\";v=\"116\", \"Chromium\";v=\"116\", \"Not-A.Brand\";v=\"24\"")
-	headers.Add("sec-ch-ua-full-version-list", "\"Google Chrome\";v=\"116.0.5845.140\", \"Chromium\";v=\"116.0.5845.140\", \"Not-A.Brand\";v=\"24.0.0.0\"")
+	headers.Add("sec-ch-ua", "\"Chromium\";v=\"142\", \"Brave\";v=\"142\", \"Not_A Brand\";v=\"99\"")
+	headers.Add("sec-ch-ua-full-version-list", "\"Chromium\";v=\"142.0.0.0\", \"Brave\";v=\"142.0.0.0\", \"Not_A Brand\";v=\"99.0.0.0\"")
 	headers.Add("sec-ch-ua-mobile", "?0")
 	headers.Add("sec-ch-ua-model", "")
-	headers.Add("sec-ch-ua-platform", "Linux")
-	headers.Add("sec-ch-ua-platform-version", "6.4.12")
+	headers.Add("sec-ch-ua-platform", "Windows")
+	headers.Add("sec-ch-ua-platform-version", "10.0.0")
 	headers.Add("user-agent", USER_AGENT)
 
 	if c.platform == types.Facebook {
