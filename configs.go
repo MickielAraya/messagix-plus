@@ -2,7 +2,6 @@ package messagixplus
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/MickielAraya/messagix-plus/crypto"
@@ -65,7 +64,6 @@ func (c *Configs) SetupConfigs() error {
 			if err != nil {
 				return fmt.Errorf("failed to sync transactions from js module data with syncManager: %e", err)
 			}
-			log.Println("hi")
 		}
 		c.client.Logger.Info().Any("value", c.Bitmap.CompressedStr).Msg("Loaded __dyn bitmap")
 		c.client.Logger.Info().Any("value", c.CsrBitmap.CompressedStr).Msg("Loaded __csr bitmap")
