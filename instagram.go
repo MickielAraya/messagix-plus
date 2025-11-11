@@ -21,7 +21,14 @@ type InstagramMethods struct {
 	client *Client
 }
 
-func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cookies.Cookies, error) {
+func (ig *InstagramMethods) Login(identifier, password, totpSecret string, attemptCount ...int) (cookies.Cookies, error) {
+	var attempts int
+	if len(attemptCount) > 0 {
+		attempts = attemptCount[0]
+	} else {
+		attempts = 0
+	}
+
 	ig.client.Account.Username = identifier
 	ig.client.Account.Password = password
 	ig.client.Account.TotpSecret = totpSecret
@@ -77,12 +84,15 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 	fmt.Println("WE HAVE JAZEOST? -> ", ig.client.configs.Jazoest)
 
 	loginForm := &types.InstagramLoginPayload{
-		EncPassword:          encryptedPw,
-		OptIntoOneTap:        false,
-		QueryParams:          `{"next":"https://www.instagram.com/accounts/onetap/?next=%2F&__coig_login=1"}`,
-		TrustedDeviceRecords: "{}",
-		Username:             identifier,
-		Jazoest:              ig.client.configs.Jazoest,
+		EncPassword:                 encryptedPw,
+		CaaF2DebugGroup:             "0",
+		IsPrivacyPortalReq:          false,
+		LoginAttemptSubmissionCount: attempts,
+		OptIntoOneTap:               false,
+		QueryParams:                 `{"next":"https://www.instagram.com/accounts/onetap/?next=%2F&__coig_login=1"}`,
+		TrustedDeviceRecords:        "{}",
+		Username:                    identifier,
+		Jazoest:                     ig.client.configs.Jazoest,
 	}
 
 	form, err := query.Values(&loginForm)
