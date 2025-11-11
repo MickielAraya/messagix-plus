@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	http "github.com/bogdanfinn/fhttp"
 
 	cookies "github.com/MickielAraya/messagix-plus/cookies"
 	methods "github.com/MickielAraya/messagix-plus/methods"

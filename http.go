@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"strconv"
+
+	http "github.com/bogdanfinn/fhttp"
 
 	cookies "github.com/MickielAraya/messagix-plus/cookies"
 	types "github.com/MickielAraya/messagix-plus/types"
@@ -80,6 +81,8 @@ func (c *Client) MakeRequest(url string, method string, headers http.Header, pay
 	if err != nil {
 		return nil, nil, err
 	}
+
+	headers.Set("Connection", "close")
 
 	if contentType != types.NONE {
 		headers.Add("content-type", string(contentType))

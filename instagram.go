@@ -3,9 +3,10 @@ package messagixplus
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strconv"
+
+	http "github.com/bogdanfinn/fhttp"
 
 	"github.com/MickielAraya/messagix-plus/cookies"
 	"github.com/MickielAraya/messagix-plus/crypto"

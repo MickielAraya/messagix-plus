@@ -3,13 +3,14 @@ package cookies
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/textproto"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	http "github.com/bogdanfinn/fhttp"
 
 	types "github.com/MickielAraya/messagix-plus/types"
 	"golang.org/x/net/http/httpguts"

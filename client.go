@@ -5,18 +5,21 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
+	ogHttp "net/http"
 	"net/url"
 	"os"
 	"reflect"
 	"strconv"
 	"sync"
 
+	http "github.com/bogdanfinn/fhttp"
+
 	"github.com/MickielAraya/messagix-plus/cookies"
 	"github.com/MickielAraya/messagix-plus/crypto"
 	"github.com/MickielAraya/messagix-plus/data/endpoints"
 	"github.com/MickielAraya/messagix-plus/table"
 	"github.com/MickielAraya/messagix-plus/types"
+
 	"github.com/google/go-querystring/query"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/slices"
@@ -26,6 +29,7 @@ var USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (
 var ErrRedirectAttempted = errors.New("redirect attempted")
 
 type EventHandler func(evt interface{})
+
 type Client struct {
 	Account   *Account
 	Threads   *Threads
@@ -41,7 +45,7 @@ type Client struct {
 	SyncManager  *SyncManager
 
 	cookies cookies.Cookies
-	proxy   func(*http.Request) (*url.URL, error)
+	proxy   func(*ogHttp.Request) (*url.URL, error)
 
 	lsRequests      int
 	graphQLRequests int

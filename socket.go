@@ -52,7 +52,7 @@ func (c *Client) NewSocketClient() *Socket {
 			client:          c,
 			requestChannels: make(map[uint16]chan interface{}, 0),
 			packetChannels:  make(map[uint16]chan interface{}, 0),
-			packetTimeout:   time.Second * 10, // 10 sec timeout if puback is not received
+			packetTimeout:   time.Second * 10,
 		},
 		mu:          &sync.Mutex{},
 		packetsSent: 0,

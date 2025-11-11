@@ -3,7 +3,8 @@ package messagixplus
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
+
+	http "github.com/bogdanfinn/fhttp"
 
 	graphql "github.com/MickielAraya/messagix-plus/graphql"
 	lightspeed "github.com/MickielAraya/messagix-plus/lightspeed"
