@@ -43,11 +43,15 @@ type InstagramCookiesVariables struct {
 }
 
 type InstagramLoginPayload struct {
-	Password             string `url:"enc_password"`
-	OptIntoOneTap        bool   `url:"optIntoOneTap"`
-	QueryParams          string `url:"queryParams"`
-	TrustedDeviceRecords string `url:"trustedDeviceRecords"`
-	Username             string `url:"username"`
+	EncPassword                 string `url:"enc_password"`
+	CaaF2DebugGroup             string `url:"caaF2DebugGroup"`
+	IsPrivacyPortalReq          bool   `url:"isPrivacyPortalReq"`
+	LoginAttemptSubmissionCount int    `url:"loginAttemptSubmissionCount"`
+	OptIntoOneTap               bool   `url:"optIntoOneTap"`
+	QueryParams                 string `url:"queryParams"`
+	TrustedDeviceRecords        string `url:"trustedDeviceRecords"`
+	Username                    string `url:"username"`
+	Jazoest                     string `url:"jazoest"`
 }
 
 type InstagramLoginResponse struct {

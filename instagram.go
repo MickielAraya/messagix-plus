@@ -74,12 +74,15 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string) (cook
 		return nil, fmt.Errorf("failed to encrypt password for instagram: %w", err)
 	}
 
+	fmt.Println("WE HAVE JAZEOST? -> ", ig.client.configs.Jazoest)
+
 	loginForm := &types.InstagramLoginPayload{
-		Password:             encryptedPw,
+		EncPassword:          encryptedPw,
 		OptIntoOneTap:        false,
-		QueryParams:          "{}",
+		QueryParams:          `{"next":"https://www.instagram.com/accounts/onetap/?next=%2F&__coig_login=1"}`,
 		TrustedDeviceRecords: "{}",
 		Username:             identifier,
+		Jazoest:              ig.client.configs.Jazoest,
 	}
 
 	form, err := query.Values(&loginForm)
@@ -167,7 +170,7 @@ func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret stri
 	h.Set("sec-ch-ua", `"Brave";v="141", "Not?A_Brand";v="8", "Chromium";v="141"`)
 	h.Set("x-instagram-ajax", "1028361656")
 
-	apiURL := "https://www.instagram.com/api/v1/web/accounts/login/ajax/two_factor/"
+	apiURL := ig.client.getEndpoint("web_login_ajax_v1_two_factor")
 	resp, respBody, err := ig.client.MakeRequest(apiURL, "POST", h, []byte(formBody), types.FORM)
 
 	if err != nil {

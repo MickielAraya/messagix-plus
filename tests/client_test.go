@@ -1,4 +1,4 @@
-package messagixplus_test
+package tests_test
 
 import (
 	"log"

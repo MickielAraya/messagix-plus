@@ -20,9 +20,10 @@ var InstagramEndpoints = map[string]string{
 
 	"media_upload": instaBaseUrl + "/ajax/mercury/upload.php?",
 
-	"web_login_page_v1":  instaWebApiV1Url + "/login_page/",
-	"web_shared_data_v1": instaWebApiV1Url + "/data/shared_data/",
-	"web_login_ajax_v1":  instaWebApiV1Url + "/accounts/login/ajax/",
+	"web_login_page_v1":            instaWebApiV1Url + "/login_page/",
+	"web_shared_data_v1":           instaWebApiV1Url + "/data/shared_data/",
+	"web_login_ajax_v1":            instaWebApiV1Url + "/accounts/login/ajax/",
+	"web_login_ajax_v1_two_factor": instaWebApiV1Url + "/accounts/login/ajax/two_factor/",
 
 	"create_thread":    instaApiV1Url + "/direct_v2/create_group_thread/",
 	"web_profile_info": instaApiV1Url + "/users/web_profile_info/?",
