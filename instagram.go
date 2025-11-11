@@ -195,6 +195,10 @@ func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret stri
 	return nil
 }
 
+func (ig *InstagramMethods) CaptchaLogin(username, identifier, totpSecret string) error {
+	return nil
+}
+
 func (ig *InstagramMethods) FetchProfile(username string) (*responses.ProfileInfoResponse, error) {
 	h := ig.client.buildHeaders(true)
 	h.Add("x-requested-with", "XMLHttpRequest")

@@ -43,6 +43,16 @@ func (a *Account) processLogin(ig *InstagramMethods, resp *http.Response, respBo
 					break
 				}
 			}
+
+			if loginResp.Message == "checkpoint_required" {
+				err = fmt.Errorf("failed to process login due to captcha (checkpointUrl=%s, message=%s, statusText=%s, statusCode=%d)", loginResp.CheckpointUrl, loginResp.Message, loginResp.Status, statusCode)
+				if err != nil {
+					return err
+				}
+
+				return fmt.Errorf("failed to process login due to captcha (checkpointUrl=%s, message=%s, statusText=%s, statusCode=%d)", loginResp.CheckpointUrl, loginResp.Message, loginResp.Status, statusCode)
+			}
+
 			err = fmt.Errorf("failed to process login request (message=%s, statusText=%s, statusCode=%d)", loginResp.Message, loginResp.Status, statusCode)
 		} else if !loginResp.Authenticated {
 			err = fmt.Errorf("failed to login, invalid password (userExists=%t, statusText=%s, statusCode=%d)", loginResp.User, loginResp.Status, statusCode)
