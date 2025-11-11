@@ -1,38 +1,38 @@
 package graphql
 
 type GraphQLDoc struct {
-	DocId string
-	CallerClass string
+	DocId        string
+	CallerClass  string
 	FriendlyName string
 }
 
 var GraphQLDocs = map[string]GraphQLDoc{
 	"LSGraphQLRequest": {
-		DocId: "7357432314358409",
-		CallerClass: "RelayModern",
+		DocId:        "7357432314358409",
+		CallerClass:  "RelayModern",
 		FriendlyName: "LSPlatformGraphQLLightspeedRequestQuery",
 	},
 	"LSGraphQLRequestIG": {
-		DocId: "6195354443842040",
-		CallerClass: "RelayModern",
+		DocId:        "6195354443842040",
+		CallerClass:  "RelayModern",
 		FriendlyName: "LSPlatformGraphQLLightspeedRequestForIGDQuery",
 	},
 }
 
 type LSPlatformGraphQLLightspeedRequestPayload struct {
 	DeviceID              string `json:"deviceId,omitempty"`
-	IncludeChatVisibility bool   `json:"includeChatVisibility"`
+	IncludeChatVisibility bool   `json:"includeChatVisibility,omitempty"`
 	RequestID             int    `json:"requestId"`
 	RequestPayload        string `json:"requestPayload,omitempty"`
 	RequestType           int    `json:"requestType"`
 }
 
 type LSPlatformGraphQLLightspeedVariables struct {
-	Database          int `json:"database,omitempty"`
-	EpochID           int64 `json:"epoch_id"`
-	SyncParams interface{} `json:"sync_params,omitempty"`
-	LastAppliedCursor any `json:"last_applied_cursor"`
-	Version int64 `json:"version,omitempty"`
+	Database          int         `json:"database,omitempty"`
+	EpochID           int64       `json:"epoch_id"`
+	SyncParams        interface{} `json:"sync_params,omitempty"`
+	LastAppliedCursor any         `json:"last_applied_cursor"`
+	Version           int64       `json:"version,omitempty"`
 }
 
 type SyncParams struct {

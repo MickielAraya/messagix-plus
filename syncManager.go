@@ -124,6 +124,8 @@ func (sm *SyncManager) SyncDataGraphQL(dbs []int64) (*table.LSTable, error) {
 			return nil, fmt.Errorf("could not find sync store for database: %d", db)
 		}
 
+		fmt.Println("versionId", sm.client.configs.VersionId)
+
 		variables := &graphql.LSPlatformGraphQLLightspeedVariables{
 			Database:          int(db),
 			LastAppliedCursor: database.LastAppliedCursor,

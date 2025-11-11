@@ -19,7 +19,9 @@ import (
 )
 
 var jsDatrPattern = regexp.MustCompile(`"_js_datr","([^"]+)"`)
-var versionPattern = regexp.MustCompile(`__d\("LSVersion"[^)]+\)\{e\.exports="(\d+)"\}`)
+
+// var versionPattern = regexp.MustCompile(`__d\("LSVersion"[^)]+\)\{e\.exports="(\d+)"\}`)
+var versionPattern = regexp.MustCompile(`,\\"version\\":(\d+)\}","\s*requestType":1\}`)
 
 type ModuleData struct {
 	Define    [][]interface{} `json:"define,omitempty"`
@@ -95,6 +97,16 @@ func (m *ModuleParser) Load(page string) error {
 		htmlData = m.testData
 	}
 
+	versionMatches := versionPattern.FindStringSubmatch(string(htmlData))
+	if len(versionMatches) > 0 {
+		versionInt, err := strconv.ParseInt(versionMatches[1], 10, 64)
+		if err == nil {
+			m.client.configs.VersionId = versionInt
+		} else {
+			log.Printf("Error parsing version from html: %v", err)
+		}
+	}
+
 	doc, err := html.Parse(bytes.NewReader(htmlData))
 	if err != nil {
 		return fmt.Errorf("messagix-moduleparser: failed to parse doc string (%e)", err)
@@ -145,6 +157,7 @@ func (m *ModuleParser) Load(page string) error {
 	if m.client.configs.VersionId == 0 && authenticated {
 		m.client.configs.needSync = true
 		m.client.Logger.Info().Msg("Setting configs.needSync to true")
+
 		var doneCrawling bool
 		linkTags := m.findLinkTags(doc)
 		for _, tag := range linkTags {
@@ -286,6 +299,8 @@ func (m *ModuleParser) crawlJavascriptFile(href string) (bool, error) {
 		log.Fatal(err)
 	}
 
+	// this seems to be recently deprecated, but keeping it here for now
+	// instagram seems to load teh version in the html now instead of in a dyanmic js loader file
 	versionMatches := versionPattern.FindStringSubmatch(string(jsContent))
 	if len(versionMatches) > 0 {
 		versionInt, err := strconv.ParseInt(versionMatches[1], 10, 64)
@@ -394,7 +409,7 @@ func (m *ModuleParser) findLinkTags(n *html.Node) []LinkTag {
 		return LinkTag{Attributes: attributes}
 	}
 
-	tags := m.findTags("link", processor, n)
+	tags := m.findTags("LSVersion", processor, n)
 	linkTags := make([]LinkTag, len(tags))
 	for i, t := range tags {
 		linkTags[i] = t.(LinkTag)

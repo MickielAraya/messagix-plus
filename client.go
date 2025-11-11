@@ -12,7 +12,8 @@ import (
 	"strconv"
 	"sync"
 
-	http "github.com/bogdanfinn/fhttp"
+	tls_client "github.com/bogdanfinn/tls-client"
+	"github.com/bogdanfinn/tls-client/profiles"
 
 	"github.com/MickielAraya/messagix-plus/cookies"
 	"github.com/MickielAraya/messagix-plus/crypto"
@@ -38,7 +39,7 @@ type Client struct {
 	Facebook  *FacebookMethods
 	Logger    zerolog.Logger
 
-	http         *http.Client
+	http         tls_client.HttpClient
 	socket       *Socket
 	eventHandler EventHandler
 	configs      *Configs
@@ -55,12 +56,8 @@ type Client struct {
 	activeTasks     []int
 }
 
-// pass an empty zerolog.Logger{} for no logging
 func NewClient(platform types.Platform, cookies cookies.Cookies, logger zerolog.Logger, proxy string) (*Client, error) {
 	cli := &Client{
-		http: &http.Client{
-			Transport: &http.Transport{},
-		},
 		cookies:         cookies,
 		Logger:          logger,
 		lsRequests:      0,
@@ -82,18 +79,18 @@ func NewClient(platform types.Platform, cookies cookies.Cookies, logger zerolog.
 		Bitmap:             crypto.NewBitmap(),
 		CsrBitmap:          crypto.NewBitmap(),
 	}
-	if proxy != "" {
-		err := cli.SetProxy(proxy)
-		if err != nil {
-			return nil, fmt.Errorf("messagix-client: failed to set proxy (%e)", err)
-		}
+
+	httpClient, err := cli.createHttpClient(proxy)
+	if err != nil {
+		return nil, fmt.Errorf("messagix-client: failed to create http client (%e)", err)
 	}
+	cli.http = httpClient
 
 	if !cli.cookies.IsLoggedIn() {
 		return cli, nil
 	}
 
-	err := cli.configureAfterLogin()
+	err = cli.configureAfterLogin()
 	if err != nil {
 		return nil, err
 	}
@@ -149,15 +146,31 @@ func (c *Client) configurePlatformClient() {
 	}
 }
 
-func (c *Client) SetProxy(proxy string) error {
-	proxyParsed, err := url.Parse(proxy)
-	if err != nil {
-		return err
+func (c *Client) createHttpClient(proxy string) (tls_client.HttpClient, error) {
+	options := []tls_client.HttpClientOption{
+		tls_client.WithTimeoutSeconds(30),
+		tls_client.WithClientProfile(profiles.Chrome_133),
 	}
 
-	c.http.Transport = &http.Transport{
-		Proxy: http.ProxyURL(proxyParsed),
+	if proxy != "" {
+		options = append(options, tls_client.WithProxyUrl(proxy))
 	}
+
+	httpClient, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
+	if err != nil {
+		return nil, err
+	}
+
+	return httpClient, nil
+}
+
+func (c *Client) SetProxy(proxy string) error {
+	httpClient, err := c.createHttpClient(proxy)
+	if err != nil {
+		return fmt.Errorf("messagix-client: failed to recreate http client with proxy (%e)", err)
+	}
+	c.http = httpClient
+	proxyParsed, _ := url.Parse(proxy)
 	c.Logger.Debug().Any("addr", proxyParsed.Host).Msg("Proxy Updated")
 	return nil
 }
@@ -263,13 +276,11 @@ func (c *Client) sendCookieConsent(jsDatr string) error {
 }
 
 func (c *Client) enableRedirects() {
-	c.http.CheckRedirect = nil
+	c.http.SetFollowRedirect(true)
 }
 
 func (c *Client) disableRedirects() {
-	c.http.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		return ErrRedirectAttempted
-	}
+	c.http.SetFollowRedirect(false)
 }
 
 func (c *Client) getEndpoint(name string) string {
