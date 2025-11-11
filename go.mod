@@ -5,6 +5,7 @@ go 1.24.1
 require (
 	github.com/bogdanfinn/fhttp v0.6.3
 	github.com/bogdanfinn/tls-client v1.11.2
+	github.com/bogdanfinn/utls v1.7.4-barnius
 	github.com/google/go-querystring v1.1.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/mattn/go-colorable v0.1.13
@@ -16,7 +17,6 @@ require (
 require (
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/bogdanfinn/quic-go-utls v1.0.4-utls // indirect
-	github.com/bogdanfinn/utls v1.7.4-barnius // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 	github.com/cloudflare/circl v1.5.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
