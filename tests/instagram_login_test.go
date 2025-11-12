@@ -17,13 +17,11 @@ func TestLogin(t *testing.T) {
 		t.Fatalf("failed to create instagram cookies: %v", err)
 	}
 
-	// Fill in proxy of your choice or MITM
 	cli, err := messagixplus.NewClient(types.Instagram, &session, debug.NewLogger(), "")
 	if err != nil {
 		t.Fatalf("failed to create messagix client: %v", err)
 	}
 
-	// Fill in your credentials
 	cookies, err := cli.Instagram.Login("", "", "", 0, "")
 	if err != nil {
 		t.Fatalf("failed to login: %v", err)
