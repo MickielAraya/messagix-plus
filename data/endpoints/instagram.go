@@ -24,9 +24,12 @@ var InstagramEndpoints = map[string]string{
 	"web_shared_data_v1":           instaWebApiV1Url + "/data/shared_data/",
 	"web_login_ajax_v1":            instaWebApiV1Url + "/accounts/login/ajax/",
 	"web_login_ajax_v1_two_factor": instaWebApiV1Url + "/accounts/login/ajax/two_factor/",
+	"challenge_url":                instaApiV1Url + "/challenge/%s/web/",
 
-	"create_thread":    instaApiV1Url + "/direct_v2/create_group_thread/",
-	"web_profile_info": instaApiV1Url + "/users/web_profile_info/?",
-	"reels_media":      instaApiV1Url + "/feed/reels_media/?",
-	"media_info":       instaApiV1Url + "/media/%s/info/",
+	"create_thread":     instaApiV1Url + "/direct_v2/create_group_thread/",
+	"web_profile_info":  instaApiV1Url + "/users/web_profile_info/?",
+	"reels_media":       instaApiV1Url + "/feed/reels_media/?",
+	"media_info":        instaApiV1Url + "/media/%s/info/",
+	"challenge_web_url": instaApiV1Url + "/challenge/web/%s",
+	// "challenge_web_action": instaApiV1Url + "/challenge/web/action/%s",
 }

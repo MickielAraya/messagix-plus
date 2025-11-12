@@ -59,7 +59,8 @@ func (fb *FacebookMethods) Login(identifier, password string) (cookies.Cookies, 
 	}
 
 	loginUrl := fb.client.getEndpoint("base_url") + loginPath
-	loginResp, loginBody, err := fb.client.Account.sendLoginRequest(form, loginUrl)
+	// REMEMBER WE JUST ADDED THIS TO REMOVE ERROR WILL NEED TO CHECK FB HEADERS IN FUTURE
+	loginResp, loginBody, err := fb.client.Account.sendLoginRequest(form.Encode(), loginUrl)
 	if err != nil {
 		return nil, err
 	}

@@ -10,8 +10,10 @@ import (
 )
 
 func TestSendMessage(t *testing.T) {
+	// Fill in your thread ID
 	threadId := int64(0)
 
+	// Fill in your cookies
 	session := cookies.InstagramCookies{}
 	err := cookies.NewCookiesFromString(
 		``,
@@ -21,7 +23,8 @@ func TestSendMessage(t *testing.T) {
 		t.Fatalf("failed to create instagram cookies: %v", err)
 	}
 
-	cli, err := messagixplus.NewClient(types.Instagram, &session, debug.NewLogger(), "http://127.0.0.1:8888")
+	// Fill in proxy of your choice or MITM
+	cli, err := messagixplus.NewClient(types.Instagram, &session, debug.NewLogger(), "")
 	if err != nil {
 		t.Fatalf("failed to create messagix client: %v", err)
 	}

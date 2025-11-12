@@ -1,0 +1,24 @@
+{
+    "challengeType": "RecaptchaChallengeForm",
+    "errors": [],
+    "experiments": {},
+    "extraData": null,
+    "fields": {
+        "g-recaptcha-response": "None",
+        "disable_num_days_remaining": -2102,
+        "code_whitelisted": false,
+        "user_id": "0",
+        "acta_propagation": false,
+        "recaptcha_bypass": false,
+        "challenge_name": "LoginWebRecaptchaChallenge"
+    },
+    "navigation": {
+        "forward": "/api/v1/challenge/web/action/ASjzI5WBlhNqAW6FUBs9kRjq99HDgrlhkBRIPFd5rOpk-inSBEcZGVXZgckRkNmIdvfbxQ/ASSGh_yLMs82d-gg9dyUOraSLIXh7K_cpKjnLtlgfIoparNtcedNyxWpu3m46nZfgrVTxZrkY0o70Q/",
+        "replay": "/challenge/replay/ASjzI5WBlhNqAW6FUBs9kRjq99HDgrlhkBRIPFd5rOpk-inSBEcZGVXZgckRkNmIdvfbxQ/ASSGh_yLMs82d-gg9dyUOraSLIXh7K_cpKjnLtlgfIoparNtcedNyxWpu3m46nZfgrVTxZrkY0o70Q/",
+        "dismiss": "https://www.instagram.com/"
+    },
+    "privacyPolicyUrl": "/about/legal/privacy/",
+    "type": "CHALLENGE",
+    "challenge_context": "AaUEK6roQ0UZd-aTzIjNsljJIr-H4g-mUhhdQ4JkzJhUNr0mutdEOUw2GcmDZFEfNabMUJKlNSOKT5b-0hfmC8jKeLH-Rnty0Y2kl-1eW4vcDb6nllSeHGu_-16fP17kVwZA6X1OqaGCB_mB5FYHEkpBe74YPEk6zPXR1We-tZFAHl9jmhwzGdXvbEDMxHl0U0Jcf8wPxzg2MlrluVauZBB_Zhu4XgWCCzd-P-R22BsSf6Ogrut-VQ4xm3tYHFf17uJhxP_AwMBkCixGvBuAp_jHKCXp75hBuAtgWqBc66vZv-5UKB7pT6pNZsNj-zrKJU_K6faSA4zjyk1vvQrERvtqso3OV5Hz6QUYp9nlFP6wviAJK8LzO-njouFOa4LdfmZtFEgHaofp5HQI4HsOjBMlYMHOn0p4MeI3XCkKq5NgCmogHvne9LpWTzLARefBsHvwJ5VBvF2La72_tvpiGuSqti_HyrfmSUdq9vErV3dwtoWOZkzr_67QuA22UJxj_nuNeTh8bIIlNKMT-qWvwLVpsOzICqJ0qszRI-fus2bs590fb5q5vnOsPQ1oLUDdfsZ_srH4HeSw5OuYFwB8AC-34uAnr-wZM8Zx5_6S5LwBXX5UYsPSihylzV0aXry05L_RdbhpEDRtGnRsLdzYHIfuWb3jSz_FofHvFDr9aL_gXxHqj6ZzEOkQEtq3WAuK62XeV-5XDYF6NkcUFd-YMaW68Q-zeATXEPPpV--kkItuWHKxeBCD0hY-CkFt-lXboDJPUVz6Y7VDJP0Xr76izQqw1Fb3s5ehtREcUbDFPHTGktlJ2Tlycz98XxBPiwSEo-kU9fjOSM2JKnmxsoFSh2fXYub3Fofs0af4iw6MACGf8I5FmLOQKr3QJETaQ6woc-EPone6Xn0tlFV0PUoBzGphJsjiGg9yWjhKRuvC1ILpf7T82XWrvGTU6lA_yvCD_AWFUqI5dM1yoCIgQ4mg-QcKva-wMC3NF7QEj07IGdChJVwKFoCVtEEaQxweaZuKUjmu_OV9ndBMCF1uEmY_J6dgc1gB6zPbxofBL1zJbclpJXVRB4FxLCAjsNDlCP3iDqqGdSV0AUDl8xXH0jB81Xyszj5BsZZIc_U24K9jM4_zMw8tXdTDEt7CRuc1sI5MHvknFPILxaMbI8W6xK8TcMhpBbRdzuZ6Ocq6F2a3M4LzqU8ZZJiRRDsyYXOlKIbTr9c5Lj7BYLvsBLa7Byra5v0e4F6SyR57DaBLZTOl9j6RTnHPGOpuuJZcy8Rd3hBin9tpJrPuRzYjE8vAmwNgmgC_PCtkxa24uSf3g1UXh0qjpu-7OM27CRfiOXFMXsdcVYUJdHsl4ixSOpdlN3mPOJ4i5IflPdmzRWJUxo9HRSVN9YU8e2Jzy2rYd4I-z96Ltfb_B56JhLBdinybiVBtERJOml3lK7NCIQUN_0XyQ1CWS5NOoHrsn5flhFVm9ZcjGQuHd9BwpidkkRael0Vdp_XBK4MZ3rXqZ504fyXyNaxFOvNtCftDrUCGXnxUcC1ewRvOWABeCsnER1NiN9jeb1cZUTgBOyR-nerWIWMC37zalZDLKW5K-nU2tRJjCvcB4ZTh1ke4-Qp5XeXmbFZvW7QwfbkGHcyyPSWg8E_f4Jtg-MHWVzEG_JMMvvfH_TwzV0jD578dgi7dEj0rkTMqMptOzkXzd7U0vJDnUIU_07aVL21pt4AKI7cmBhriYbBacm4WZHAGVzl_E0GyWrWp",
+    "status": "ok"
+}

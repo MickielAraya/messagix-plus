@@ -6,9 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"time"
-
-	http "github.com/bogdanfinn/fhttp"
 )
 
 const (

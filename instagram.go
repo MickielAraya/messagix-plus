@@ -3,8 +3,10 @@ package messagixplus
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
+	"strings"
 
 	http "github.com/bogdanfinn/fhttp"
 
@@ -13,8 +15,6 @@ import (
 	"github.com/MickielAraya/messagix-plus/data/responses"
 	"github.com/MickielAraya/messagix-plus/types"
 	"github.com/MickielAraya/messagix-plus/utils"
-
-	"github.com/google/go-querystring/query"
 )
 
 // specific methods for insta api, not socket related
@@ -22,14 +22,34 @@ type InstagramMethods struct {
 	client *Client
 }
 
-func (ig *InstagramMethods) Login(identifier, password, totpSecret string, attemptCount ...int) (cookies.Cookies, error) {
-	var attempts int
-	if len(attemptCount) > 0 {
-		attempts = attemptCount[0]
-	} else {
-		attempts = 0
+func buildInstagramLoginForm(form *types.InstagramLoginPayload) string {
+	fields := []struct {
+		key   string
+		value string
+	}{
+		{"enc_password", form.EncPassword},
+		{"caaF2DebugGroup", form.CaaF2DebugGroup},
+		{"isPrivacyPortalReq", strconv.FormatBool(form.IsPrivacyPortalReq)},
+		{"loginAttemptSubmissionCount", strconv.Itoa(form.LoginAttemptSubmissionCount)},
+		{"optIntoOneTap", strconv.FormatBool(form.OptIntoOneTap)},
+		{"queryParams", form.QueryParams},
+		{"trustedDeviceRecords", form.TrustedDeviceRecords},
+		{"username", form.Username},
+		{"jazoest", form.Jazoest},
 	}
 
+	var parts []string
+	for _, field := range fields {
+		parts = append(parts, url.QueryEscape(field.key)+"="+url.QueryEscape(field.value))
+	}
+
+	return strings.Join(parts, "&")
+}
+
+func (ig *InstagramMethods) Login(identifier, password, totpSecret string, attemptCount int, capSolverKey string) (cookies.Cookies, error) {
+	if capSolverKey != "" {
+		ig.client.Account.CapSolverKey = capSolverKey
+	}
 	ig.client.Account.Username = identifier
 	ig.client.Account.Password = password
 	ig.client.Account.TotpSecret = totpSecret
@@ -63,7 +83,6 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string, attem
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch %s for instagram login: %w", web_shared_data_v1, err)
 	}
-
 	cookies.UpdateFromResponse(ig.client.cookies, req.Header)
 
 	err = json.Unmarshal(respBody, &ig.client.configs.browserConfigTable.XIGSharedData.ConfigData)
@@ -86,21 +105,19 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string, attem
 		EncPassword:                 encryptedPw,
 		CaaF2DebugGroup:             "0",
 		IsPrivacyPortalReq:          false,
-		LoginAttemptSubmissionCount: attempts,
+		LoginAttemptSubmissionCount: attemptCount,
 		OptIntoOneTap:               false,
-		QueryParams:                 `{"next":"https://www.instagram.com/accounts/onetap/?next=%2F&__coig_login=1"}`,
-		TrustedDeviceRecords:        "{}",
-		Username:                    identifier,
-		Jazoest:                     ig.client.configs.Jazoest,
+		// QueryParams:                 `{"next":"https://www.instagram.com/accounts/onetap/?next=%2F&__coig_login=1"}`,
+		QueryParams:          `{"flo":"true"}`,
+		TrustedDeviceRecords: "{}",
+		Username:             identifier,
+		Jazoest:              ig.client.configs.Jazoest,
 	}
 
-	form, err := query.Values(&loginForm)
-	if err != nil {
-		return nil, fmt.Errorf("failed to encode login form payload: %w", err)
-	}
+	formData := buildInstagramLoginForm(loginForm)
 
 	web_login_ajax_v1 := ig.client.getEndpoint("web_login_ajax_v1")
-	loginResp, loginBody, err := ig.client.Account.sendLoginRequest(form, web_login_ajax_v1)
+	loginResp, loginBody, err := ig.client.Account.sendLoginRequest(formData, web_login_ajax_v1)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +130,7 @@ func (ig *InstagramMethods) Login(identifier, password, totpSecret string, attem
 	return ig.client.cookies, nil
 }
 
-func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret string) error {
+func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret string, queryParams string) error {
 	if identifier == "" || totpSecret == "" {
 		return fmt.Errorf("missing identifier, or TOTP secret for Instagram two-factor login")
 	}
@@ -136,7 +153,7 @@ func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret stri
 	}{
 		{"identifier", identifier},
 		{"isPrivacyPortalReq", "false"},
-		{"queryParams", `{"next":"/"}`},
+		{"queryParams", queryParams},
 		{"trust_signal", "true"},
 		{"username", username},
 		{"verification_method", "3"},
@@ -181,11 +198,9 @@ func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret stri
 
 	apiURL := ig.client.getEndpoint("web_login_ajax_v1_two_factor")
 	resp, respBody, err := ig.client.MakeRequest(apiURL, "POST", h, []byte(formBody), types.FORM)
-
 	if err != nil {
 		return fmt.Errorf("instagram 2FA request failed: %w", err)
 	}
-
 	cookies.UpdateFromResponse(ig.client.cookies, resp.Header)
 
 	var loginResp types.InstagramLoginResponse
@@ -207,8 +222,241 @@ func (ig *InstagramMethods) TwoFactorLogin(username, identifier, totpSecret stri
 	return nil
 }
 
-func (ig *InstagramMethods) CaptchaLogin(username, identifier, totpSecret string) error {
-	return nil
+func (ig *InstagramMethods) CaptchaLogin(checkpointUrl string) error {
+	csrf := ig.client.cookies.GetValue("csrftoken")
+
+	h := http.Header{
+		"sec-ch-ua-full-version-list": {`"Chromium";v="142.0.0.0", "Brave";v="142.0.0.0", "Not_A Brand";v="99.0.0.0"`},
+		"sec-ch-ua-platform":          {`"Windows"`},
+		"x-csrftoken":                 {csrf},
+		"x-web-session-id":            {ig.client.configs.WebSessionId},
+		"sec-ch-ua":                   {`"Chromium";v="142", "Brave";v="142", "Not_A Brand";v="99"`},
+		"sec-ch-ua-model":             {""},
+		"sec-ch-ua-mobile":            {"?0"},
+		"x-ig-app-id":                 {ig.client.configs.browserConfigTable.CurrentUserInitialData.AppID},
+		"x-bloks-version-id":          {"e931ff03adc522742d788ba659da2ded4fb760f51c8576b5cd93cdaf3987e4b0"},
+		"x-asbd-id":                   {"359341"},
+		"x-requested-with":            {"XMLHttpRequest"},
+		"user-agent":                  {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"},
+		"accept":                      {"*/*"},
+		"x-ig-www-claim":              {"hmac.AR2A0_W42tAvVCK5VXYZA0QYFTu4Dj2a89aXR1T9m57wdxNC"},
+		"sec-ch-ua-platform-version":  {`"10.0.0"`},
+		"sec-gpc":                     {"1"},
+		"accept-language":             {"en-US,en;q=0.6"},
+		"sec-fetch-site":              {"same-origin"},
+		"sec-fetch-mode":              {"cors"},
+		"sec-fetch-dest":              {"empty"},
+		"referer":                     {checkpointUrl},
+		"accept-encoding":             {"gzip, deflate, br, zstd"},
+		"cookie":                      {cookies.CookiesToString(ig.client.cookies)},
+		"priority":                    {"u=1, i"},
+		http.HeaderOrderKey: {
+			"sec-ch-ua-full-version-list",
+			"sec-ch-ua-platform",
+			"x-csrftoken",
+			"x-web-session-id",
+			"sec-ch-ua",
+			"sec-ch-ua-model",
+			"sec-ch-ua-mobile",
+			"x-ig-app-id",
+			"x-bloks-version-id",
+			"x-asbd-id",
+			"x-requested-with",
+			"user-agent",
+			"accept",
+			"x-ig-www-claim",
+			"sec-ch-ua-platform-version",
+			"sec-gpc",
+			"accept-language",
+			"sec-fetch-site",
+			"sec-fetch-mode",
+			"sec-fetch-dest",
+			"referer",
+			"accept-encoding",
+			"cookie",
+			"priority",
+		},
+		http.PHeaderOrderKey: {
+			":method", ":authority", ":scheme", ":path",
+		},
+	}
+
+	u, err := url.Parse(checkpointUrl)
+	if err != nil {
+		return fmt.Errorf("failed to parse checkpoint url: %w", err)
+	}
+
+	path := u.Path
+	idx := strings.Index(path, "challenge/")
+	var afterChallenge string
+	if idx != -1 {
+		afterChallenge = path[idx+len("challenge/"):]
+	} else {
+		afterChallenge = ""
+	}
+
+	challengeContext := u.Query().Get("challenge_context")
+	if challengeContext == "" {
+		return fmt.Errorf("challenge context not found in checkpoint url")
+	}
+
+	challengeUrl := fmt.Sprintf(ig.client.getEndpoint("challenge_web_url"), afterChallenge)
+	parsedUrl, err := url.Parse(challengeUrl)
+	if err != nil {
+		return fmt.Errorf("failed to parse challenge web url: %w", err)
+	}
+
+	q := parsedUrl.Query()
+	q.Set("challenge_context", challengeContext)
+	parsedUrl.RawQuery = q.Encode()
+
+	resp, respByte, err := ig.client.MakeRequest(parsedUrl.String(), "GET", h, nil, types.NONE)
+	if err != nil {
+		return fmt.Errorf("failed to fetch checkpoint url: %w", err)
+	}
+	cookies.UpdateFromResponse(ig.client.cookies, resp.Header)
+
+	var webCaptchaResponse types.InstagramCaptchaResponse
+	err = json.Unmarshal(respByte, &webCaptchaResponse)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal response bytes into *types.InstagramWebCaptchaResponse: %w", err)
+	}
+
+	postCaptchaAction := webCaptchaResponse.Navigation.Forward
+	if postCaptchaAction == "" {
+		return fmt.Errorf("post captcha action not found in response")
+	}
+
+	captchaSolver := NewCapSolver(ig.client.Account.CapSolverKey)
+	captchaSolution, err := captchaSolver.SolveReCaptchaV2(ig.client.getEndpoint("base_url"), "6LdktRgnAAAAAFQ6icovYI2-masYLFjEFyzQzpix", WithUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"))
+	if err != nil {
+		return fmt.Errorf("failed to solve captcha: %w", err)
+	}
+
+	csrf = ig.client.cookies.GetValue("csrftoken")
+	igWWWClaim := "0"
+	if instaCookies, ok := ig.client.cookies.(*cookies.InstagramCookies); ok && instaCookies.IgWWWClaim != "" {
+		igWWWClaim = instaCookies.IgWWWClaim
+	}
+
+	h = http.Header{
+		"sec-ch-ua-full-version-list": {`"Chromium";v="142.0.0.0", "Brave";v="142.0.0.0", "Not_A Brand";v="99.0.0.0"`},
+		"sec-ch-ua-platform":          {`"Windows"`},
+		"sec-ch-ua":                   {`"Chromium";v="142", "Brave";v="142", "Not_A Brand";v="99"`},
+		"sec-ch-ua-model":             {"\"\""},
+		"sec-ch-ua-mobile":            {"?0"},
+		"x-ig-app-id":                 {"936619743392459"},
+		"x-requested-with":            {"XMLHttpRequest"},
+		"accept":                      {"*/*"},
+		"x-instagram-ajax":            {"1029725718"},
+		"x-csrftoken":                 {csrf},
+		"x-web-session-id":            {ig.client.configs.WebSessionId},
+		"x-asbd-id":                   {"359341"},
+		"user-agent":                  {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"},
+		"x-ig-www-claim":              {igWWWClaim},
+		"sec-ch-ua-platform-version":  {`"10.0.0"`},
+		"sec-gpc":                     {"1"},
+		"accept-language":             {"en-US,en;q=0.6"},
+		"origin":                      {"https://www.instagram.com"},
+		"sec-fetch-site":              {"same-origin"},
+		"sec-fetch-mode":              {"cors"},
+		"sec-fetch-dest":              {"empty"},
+		"referer":                     {checkpointUrl},
+		"accept-encoding":             {"gzip, deflate, br, zstd"},
+		"cookie":                      {cookies.CookiesToString(ig.client.cookies)},
+		"priority":                    {"u=1, i"},
+		http.HeaderOrderKey: {
+			"content-length",
+			"sec-ch-ua-full-version-list",
+			"sec-ch-ua-platform",
+			"sec-ch-ua",
+			"sec-ch-ua-model",
+			"sec-ch-ua-mobile",
+			"x-ig-app-id",
+			"x-requested-with",
+			"accept",
+			"content-type",
+			"x-instagram-ajax",
+			"x-csrftoken",
+			"x-web-session-id",
+			"x-asbd-id",
+			"user-agent",
+			"x-ig-www-claim",
+			"sec-ch-ua-platform-version",
+			"sec-gpc",
+			"accept-language",
+			"origin",
+			"sec-fetch-site",
+			"sec-fetch-mode",
+			"sec-fetch-dest",
+			"referer",
+			"accept-encoding",
+			"cookie",
+			"priority",
+		},
+		http.PHeaderOrderKey: {
+			":method", ":authority", ":scheme", ":path",
+		},
+	}
+
+	form := url.Values{}
+	form.Set("challenge_context", webCaptchaResponse.ChallengeContext)
+	form.Set("g-recaptcha-response", captchaSolution.GRecaptchaResponse)
+
+	challengeWebActionUrl := ig.client.getEndpoint("base_url") + postCaptchaAction
+
+	postCaptchaActionResp, postCaptchaActionRespBodyByte, err := ig.client.MakeRequest(challengeWebActionUrl, "POST", h, []byte(form.Encode()), types.FORM)
+	if err != nil {
+		return fmt.Errorf("failed to post captcha action: %w", err)
+	}
+	cookies.UpdateFromResponse(ig.client.cookies, postCaptchaActionResp.Header)
+
+	var captchaActionResponse types.InstagramCaptchaActionResponse
+	err = json.Unmarshal(postCaptchaActionRespBodyByte, &captchaActionResponse)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal response bytes into *types.InstagramCaptchaActionResponse: %w", err)
+	}
+
+	switch captchaActionResponse.Status {
+	case "ok":
+		parsedUrl, err := url.Parse(captchaActionResponse.Location)
+		if err != nil {
+			return fmt.Errorf("failed to parse captcha action location: %w", err)
+		}
+
+		queryParams := parsedUrl.Query()
+		type OrderedData struct {
+			Username        string `json:"username"`
+			LastFourDigits  string `json:"last_four_digits"`
+			Identifier      string `json:"identifier"`
+			SmsTwoFactorOn  string `json:"sms_two_factor_on"`
+			TotpTwoFactorOn string `json:"totp_two_factor_on"`
+		}
+
+		ordered := OrderedData{
+			Username:        queryParams.Get("username"),
+			LastFourDigits:  queryParams.Get("last_four_digits"),
+			Identifier:      queryParams.Get("identifier"),
+			SmsTwoFactorOn:  queryParams.Get("sms_two_factor_on"),
+			TotpTwoFactorOn: queryParams.Get("totp_two_factor_on"),
+		}
+
+		jsonBytes, err := json.Marshal(ordered)
+		if err != nil {
+			log.Fatalf("failed to marshal JSON: %v", err)
+		}
+
+		err = ig.TwoFactorLogin(ordered.Username, ordered.Identifier, ig.client.Account.TotpSecret, string(jsonBytes))
+		if err != nil {
+			return fmt.Errorf("failed to perform two factor login after captcha: %w", err)
+		}
+
+		return nil
+	case "fail":
+		return fmt.Errorf("captcha action failed: %s", captchaActionResponse.Type)
+	default:
+		return fmt.Errorf("unexpected captcha action status: %s", captchaActionResponse.Status)
+	}
 }
 
 func (ig *InstagramMethods) FetchProfile(username string) (*responses.ProfileInfoResponse, error) {
@@ -221,7 +469,6 @@ func (ig *InstagramMethods) FetchProfile(username string) (*responses.ProfileInf
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch the profile by username @%s: %e", username, err)
 	}
-
 	cookies.UpdateFromResponse(ig.client.cookies, resp.Header)
 
 	var profileInfo *responses.ProfileInfoResponse

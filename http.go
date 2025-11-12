@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/url"
 	"strconv"
 
 	http "github.com/bogdanfinn/fhttp"
@@ -189,9 +188,10 @@ func (c *Client) findCookie(cookies []*http.Cookie, name string) *http.Cookie {
 	return nil
 }
 
-func (a *Account) sendLoginRequest(form url.Values, loginUrl string) (*http.Response, []byte, error) {
+func (a *Account) sendLoginRequest(form string, loginUrl string) (*http.Response, []byte, error) {
 	h := a.buildLoginHeaders()
-	loginPayload := []byte(form.Encode())
+
+	loginPayload := []byte(form)
 
 	resp, respBody, err := a.client.MakeRequest(loginUrl, "POST", h, loginPayload, types.FORM)
 	if err != nil {
@@ -202,14 +202,80 @@ func (a *Account) sendLoginRequest(form url.Values, loginUrl string) (*http.Resp
 }
 
 func (a *Account) buildLoginHeaders() http.Header {
-	h := a.client.buildHeaders(true)
+	// h := a.client.buildHeaders(true)
+	var h http.Header
 	if a.client.platform == types.Facebook {
 		h = a.addFacebookHeaders(h)
-	} else {
-		h = a.addInstagramHeaders(h)
+		h.Add("origin", a.client.getEndpoint("base_url"))
+		h.Add("referer", a.client.getEndpoint("login_page"))
+		return h
 	}
-	h.Add("origin", a.client.getEndpoint("base_url"))
-	h.Add("referer", a.client.getEndpoint("login_page"))
+
+	igWWWClaim := "0"
+	if instaCookies, ok := a.client.cookies.(*cookies.InstagramCookies); ok && instaCookies.IgWWWClaim != "" {
+		igWWWClaim = instaCookies.IgWWWClaim
+	}
+
+	csrfToken := a.client.cookies.GetValue("csrftoken")
+
+	h = http.Header{
+		"sec-ch-ua-full-version-list": {"\"Chromium\";v=\"142.0.0.0\", \"Brave\";v=\"142.0.0.0\", \"Not_A Brand\";v=\"99.0.0.0\""},
+		"sec-ch-ua-platform":          {"\"Windows\""},
+		"sec-ch-ua":                   {"\"Chromium\";v=\"142\", \"Brave\";v=\"142\", \"Not_A Brand\";v=\"99\""},
+		"sec-ch-ua-model":             {"\"\""},
+		"sec-ch-ua-mobile":            {"?0"},
+		"x-ig-app-id":                 {a.client.configs.browserConfigTable.CurrentUserInitialData.AppID},
+		"x-requested-with":            {"XMLHttpRequest"},
+		"accept":                      {"*/*"},
+		// "content-type":                {"application/x-www-form-urlencoded"},
+		"x-instagram-ajax":           {"1029713389"},
+		"x-csrftoken":                {csrfToken},
+		"x-web-session-id":           {a.client.configs.WebSessionId},
+		"x-asbd-id":                  {"359341"},
+		"user-agent":                 {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"},
+		"x-ig-www-claim":             {igWWWClaim},
+		"sec-ch-ua-platform-version": {"\"10.0.0\""},
+		"sec-gpc":                    {"1"},
+		"accept-language":            {"en-US,en;q=0.6"},
+		"origin":                     {a.client.getEndpoint("base_url")},
+		"sec-fetch-site":             {"same-origin"},
+		"sec-fetch-mode":             {"cors"},
+		"sec-fetch-dest":             {"empty"},
+		"referer":                    {a.client.getEndpoint("login_page")},
+		"accept-encoding":            {"gzip, deflate, br, zstd"},
+		"cookie":                     {cookies.CookiesToString(a.client.cookies)},
+		http.HeaderOrderKey: {
+			"content-length",
+			"sec-ch-ua-full-version-list",
+			"sec-ch-ua-platform",
+			"sec-ch-ua",
+			"sec-ch-ua-model",
+			"sec-ch-ua-mobile",
+			"x-ig-app-id",
+			"x-requested-with",
+			"accept",
+			"content-type",
+			"x-instagram-ajax",
+			"x-csrftoken",
+			"x-web-session-id",
+			"x-asbd-id",
+			"user-agent",
+			"x-ig-www-claim",
+			"sec-ch-ua-platform-version",
+			"sec-gpc",
+			"accept-language",
+			"origin",
+			"sec-fetch-site",
+			"sec-fetch-mode",
+			"sec-fetch-dest",
+			"referer",
+			"accept-encoding",
+			"cookie",
+		},
+		http.PHeaderOrderKey: {
+			":method", ":authority", ":scheme", ":path",
+		},
+	}
 
 	return h
 }

@@ -5,7 +5,7 @@ Messagix is a easy-to-use Go library for interacting with facebooks/metas lights
 -   [x] Login
     -   [x] Email
     -   [x] TOTP
-    -   [ ] Captcha
+    -   [x] Captcha
     -   [ ] Phone
 -   [x] Fetch contact information
 -   [x] Typing Notifications

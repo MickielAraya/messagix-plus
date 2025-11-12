@@ -16,10 +16,13 @@ import (
 )
 
 type Account struct {
-	client     *Client
+	client *Client
+
 	Username   string
 	Password   string
 	TotpSecret string
+
+	CapSolverKey string
 }
 
 func (a *Account) processLogin(ig *InstagramMethods, resp *http.Response, respBody []byte) error {
@@ -39,19 +42,22 @@ func (a *Account) processLogin(ig *InstagramMethods, resp *http.Response, respBo
 					return fmt.Errorf("two factor required but TOTP is not enabled for this account")
 				}
 
-				err = ig.TwoFactorLogin(a.Username, loginResp.TwoFactorInfo.TwoFactorIdentifier, a.TotpSecret)
+				err = ig.TwoFactorLogin(a.Username, loginResp.TwoFactorInfo.TwoFactorIdentifier, a.TotpSecret, `{"next":"/"}`)
 				if err == nil {
 					break
 				}
 			}
 
 			if loginResp.Message == "checkpoint_required" {
-				err = fmt.Errorf("failed to process login due to captcha (checkpointUrl=%s, message=%s, statusText=%s, statusCode=%d)", loginResp.CheckpointUrl, loginResp.Message, loginResp.Status, statusCode)
+				if a.CapSolverKey == "" {
+					return fmt.Errorf("captcha key is not set")
+				}
+
+				err := ig.CaptchaLogin(loginResp.CheckpointUrl)
 				if err != nil {
 					return err
 				}
-
-				return fmt.Errorf("failed to process login due to captcha (checkpointUrl=%s, message=%s, statusText=%s, statusCode=%d)", loginResp.CheckpointUrl, loginResp.Message, loginResp.Status, statusCode)
+				break
 			}
 
 			err = fmt.Errorf("failed to process login request (message=%s, statusText=%s, statusCode=%d)", loginResp.Message, loginResp.Status, statusCode)
