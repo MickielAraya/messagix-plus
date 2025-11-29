@@ -13,9 +13,9 @@ import (
 var FacebookPubKey = "70425d9c3279f0fd3855dd64cd5588d2dfd0fe77163bd7b650e1304b5f25135b"
 var FacebookPubKeyId int = 180
 var (
-    ErrRandomReadFailed = errors.New("failed to encrypt pw: random read failed")
-    ErrAESCreation      = errors.New("failed to encrypt pw: AES cipher creation failed")
-    ErrGCMCreation      = errors.New("failed to encrypt pw: GCM mode creation failed")
+	ErrRandomReadFailed = errors.New("failed to encrypt pw: random read failed")
+	ErrAESCreation      = errors.New("failed to encrypt pw: AES cipher creation failed")
+	ErrGCMCreation      = errors.New("failed to encrypt pw: GCM mode creation failed")
 )
 
 // TO-DO: implement automatic grabbing of pub key from html module config for facebook as insta does
@@ -50,7 +50,7 @@ func EncryptPassword(platform int, pubKeyId int, pubKey, password string) (strin
 	buf.Write(sharedSecret)
 	buf.Write(encryptedData[len(encryptedData)-16:])
 	buf.Write(encryptedData[:len(encryptedData)-16])
-	
+
 	finalString := base64.StdEncoding.EncodeToString(buf.Bytes())
 
 	var formattedStr string

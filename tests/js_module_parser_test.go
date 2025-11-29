@@ -18,7 +18,7 @@ func TestParseJS(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	cli, err := messagix.NewClient(types.Instagram, &session, debug.NewLogger(), "")
+	cli, err := messagix.NewClient(types.Instagram, &session, "", debug.NewLogger())
 	if err != nil {
 		log.Fatal(err)
 	}

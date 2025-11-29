@@ -21,7 +21,7 @@ func TestClient(t *testing.T) {
 		log.Fatalf("failed to create insta cookies: %e", err)
 	}
 
-	cli, err = messagix.NewClient(types.Instagram, session, debug.NewLogger(), "")
+	cli, err = messagix.NewClient(types.Instagram, session, "", debug.NewLogger())
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -123,7 +123,7 @@ func (ls *LightSpeedDecoder) Decode(data interface{}) interface{} {
 		log.Println("got unknown step type:", stepType)
 		log.Println(stepData...)
 		log.Println(s...)
-		os.Exit(1)
+		// os.Exit(1)
 	}
 
 	return nil

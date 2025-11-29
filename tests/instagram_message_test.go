@@ -24,7 +24,7 @@ func TestSendMessage(t *testing.T) {
 	}
 
 	// Fill in proxy of your choice or MITM
-	cli, err := messagixplus.NewClient(types.Instagram, &session, debug.NewLogger(), "")
+	cli, err := messagixplus.NewClient(types.Instagram, &session, "", debug.NewLogger())
 	if err != nil {
 		t.Fatalf("failed to create messagix client: %v", err)
 	}
