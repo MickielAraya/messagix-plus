@@ -119,6 +119,16 @@ func (ls *LightSpeedDecoder) Decode(data interface{}) interface{} {
 		first := ls.Decode(stepData[0]).(int64)
 		second := ls.Decode(stepData[1]).(int64)
 		return first + second
+	case NATIVE_OP_ARRAY_CREATE:
+		return make([]interface{}, 0)
+	case NATIVE_OP_ARRAY_APPEND:
+		arrayToUpdate, ok := ls.Decode(stepData[0]).([]interface{})
+		if !ok {
+			log.Println("failed to type assert array from statement references...")
+			return nil
+		}
+		arrayToUpdate = append(arrayToUpdate, ls.Decode(stepData[1]))
+		return arrayToUpdate
 	default:
 		log.Println("got unknown step type:", stepType)
 		log.Println(stepData...)
